@@ -7,7 +7,7 @@ interface TestResult {
   status: 'success' | 'error';
   details?: string;
   issueLink?: string;
-  stackTraceLink?: string;
+  stackTrace?: string;
   isPlaying?: boolean;
 }
 
@@ -74,9 +74,9 @@ const Modal = ({ isOpen, onClose, onSubmit }: {
   );
 };
 
-const TestResult = ({ name, status, details, issueLink, stackTraceLink, isPlaying, onPlayToggle, isRecording }: TestResult & { onPlayToggle: () => void; isRecording?: boolean }) => (
-  <div className="flex items-start justify-between py-3 px-4 border-b border-gray-200 last:border-b-0">
-    <div className="flex-1">
+const TestResult = ({ name, status, details, issueLink, stackTrace, isPlaying, onPlayToggle, isRecording }: TestResult & { onPlayToggle: () => void; isRecording?: boolean }) => (
+  <div className="flex items-start justify-between py-3 px-4 border-b border-gray-200 last:border-b-0 relative">
+    <div className="flex-1 min-w-0 pr-8">
       <div className="flex items-center gap-2">
         <span className="font-medium text-gray-900">{isRecording ? 'Recording...' : name}</span>
       </div>
@@ -100,37 +100,35 @@ const TestResult = ({ name, status, details, issueLink, stackTraceLink, isPlayin
                     <span>Related Issue</span>
                   </a>
                 )}
-                {stackTraceLink && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <a 
-                      href={stackTraceLink} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                    >
-                      <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
-                      <span>Stack Trace</span>
-                    </a>
-                  </>
-                )}
               </div>
             )}
           </div>
           {details && <p className="text-sm text-gray-600 mt-1">{details}</p>}
+          {stackTrace && (
+            <div className="mt-2">
+              <div className="text-sm text-gray-600 mb-1">Stack Trace:</div>
+              <div className="max-h-32 overflow-y-auto w-[calc(100%-0.5rem)]">
+                <pre className="text-xs bg-gray-50 p-2 rounded border border-gray-200 whitespace-pre overflow-x-auto">
+                  {stackTrace}
+                </pre>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
-    <button
-      onClick={onPlayToggle}
-      className={`p-2 rounded-full ${isPlaying ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'} hover:bg-opacity-75`}
-    >
-      {isPlaying ? (
-        <StopIcon className="h-5 w-5" />
-      ) : (
-        <PlayIcon className="h-5 w-5" />
-      )}
-    </button>
+    <div className="absolute right-4 top-3">
+      <button
+        onClick={onPlayToggle}
+        className={`flex-shrink-0 p-2 rounded-full ${isPlaying ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'} hover:bg-opacity-75`}
+      >
+        {isPlaying ? (
+          <StopIcon className="h-5 w-5" />
+        ) : (
+          <PlayIcon className="h-5 w-5" />
+        )}
+      </button>
+    </div>
   </div>
 );
 
@@ -149,7 +147,19 @@ const SyntheticTestsPanel: React.FC<SyntheticTestsPanelProps> = ({ currentPage =
       case 'checkout':
         return [
           { name: 'Apply SAVE20', status: 'success', isPlaying: false },
-          { name: 'Apply SAVE50', status: 'error', isPlaying: false },
+          { 
+            name: 'Apply SAVE50', 
+            status: 'error', 
+            isPlaying: false,
+            details: 'Redis connection timeout when fetching promo code data',
+            issueLink: 'https://github.com/codecovdesign/synthetic_testing_prototype/issues/1234',
+            stackTrace: `Error: Redis connection timeout after 5000ms
+  at RedisClient.handleConnectionTimeout (app/lib/redis.ts:127:23)
+  at PromoCodeService.validateCode (app/services/promo.ts:42:18)
+  at async CheckoutController.applyPromo (app/controllers/checkout.ts:157:12)
+  at async Promise.all (index 0)
+  at async applyMiddleware (app/middleware/error.ts:12:3)`
+          },
           { name: 'Purchase Completion', status: 'success', isPlaying: false }
         ];
       case 'account':
