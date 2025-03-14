@@ -1,5 +1,7 @@
 import React from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/solid';
+import { Link } from 'react-router-dom';
+import { GitHubIcon } from '../../components/Icons';
 
 const Header = () => {
   return (
@@ -9,12 +11,21 @@ const Header = () => {
         <ChevronRightIcon className="h-4 w-4" />
         <span>Preview & Deploy</span>
         <ChevronRightIcon className="h-4 w-4" />
-        <span className="font-medium text-gray-900">PR-1234: Fix Checkout Bug</span>
+        <Link to="/pr/1234" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+          <GitHubIcon className="h-5 w-5" />
+          <span>PR-1234: Fix Checkout Bug</span>
+        </Link>
       </div>
       <div className="flex items-center space-x-4">
-        <button className="px-4 py-2 bg-[#584774] text-white rounded-md hover:bg-[#6C5B8E] transition-colors">
-          Deploy Changes
-        </button>
+        <a 
+          href="/pr/1234"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+        >
+          <GitHubIcon className="h-5 w-5" />
+          <span>View on GitHub</span>
+        </a>
       </div>
     </header>
   );

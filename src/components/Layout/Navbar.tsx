@@ -29,7 +29,7 @@ const Navbar = () => {
         <button className="text-white opacity-60 hover:opacity-100">
           <LightBulbIcon className="h-6 w-6" />
         </button>
-        <button className="text-white opacity-60 hover:opacity-100">
+        <button className="text-white opacity-100 bg-white/10 p-2 rounded-lg">
           <ShieldCheckIcon className="h-6 w-6" />
         </button>
       </div>
