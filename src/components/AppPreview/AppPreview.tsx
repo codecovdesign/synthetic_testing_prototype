@@ -57,6 +57,10 @@ const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false,
   const [currentTarget, setCurrentTarget] = useState<HTMLElement | null>(null);
   const [currentPage, setCurrentPage] = useState<PageKey>('checkout');
   const [showUrlDropdown, setShowUrlDropdown] = useState(false);
+  const [errorDetails, setErrorDetails] = useState<{
+    relatedIssues: string[];
+    stackTrace: string;
+  } | null>(null);
   
   const promoInputRef = useRef<HTMLInputElement>(null);
   const applyButtonRef = useRef<HTMLButtonElement>(null);
@@ -165,7 +169,7 @@ const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false,
   const handleApplyPromoCode = () => {
     const code = promoCode.toLowerCase();
     if (code === 'save20') {
-      setAppliedCode(promoCode); // Set this first to show the message
+      setAppliedCode(promoCode);
       setDiscount(20);
       setError('');
       setPromoCode('');
