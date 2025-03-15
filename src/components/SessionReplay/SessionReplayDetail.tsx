@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import Header from '../Layout/Header';
 import Navbar from '../Layout/Navbar';
-import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
 
@@ -272,6 +272,69 @@ const ShippingForm = ({ className = '' }: { className?: string }) => (
   </div>
 );
 
+interface CreateTestModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (testName: string) => void;
+}
+
+const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const [testName, setTestName] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Create Test</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="testName" className="block text-sm font-medium text-gray-700">
+              Test Name
+            </label>
+            <input
+              type="text"
+              id="testName"
+              value={testName}
+              onChange={(e) => setTestName(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#584774] focus:border-[#584774]"
+              placeholder="Enter test name"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (testName.trim()) {
+                  onSubmit(testName);
+                  setTestName('');
+                  onClose();
+                }
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63]"
+            >
+              Create Test
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SessionReplayDetail = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -285,6 +348,7 @@ const SessionReplayDetail = () => {
   const [testCreated, setTestCreated] = useState(replay?.hasTest || false);
   const [url, setUrl] = useState('turing-corp.com/accountcreation');
   const [showModal, setShowModal] = useState(false);
+  const [testName, setTestName] = useState('');
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -416,6 +480,7 @@ const SessionReplayDetail = () => {
   const handleCreateTest = (testName: string) => {
     console.log('Creating test:', testName);
     setTestCreated(true);
+    setTestName(testName);
   };
 
   const renderTabContent = () => {
@@ -537,9 +602,9 @@ const SessionReplayDetail = () => {
                   <span className={`text-sm font-medium ${replay?.status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
                     {replay?.status === 'error' ? 'Failing' : 'Passing'}
                   </span>
-                  {replay?.testName && (
+                  {testName && (
                     <span className="text-gray-900">
-                      {replay.testName}
+                      {testName}
                     </span>
                   )}
                 </div>
@@ -668,6 +733,11 @@ const SessionReplayDetail = () => {
           </div>
         </main>
       </div>
+      <CreateTestModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleCreateTest}
+      />
     </div>
   );
 };
