@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Navbar from './Navbar';
 import AppPreview from '../AppPreview/AppPreview';
@@ -8,6 +8,10 @@ const Layout = () => {
   const [currentTest, setCurrentTest] = useState<string | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPage, setCurrentPage] = useState('checkout');
+
+  useEffect(() => {
+    document.title = 'Sentry Browser Test PR-1234';
+  }, []);
 
   const handleTestPlay = (testId: string) => {
     setCurrentTest(testId);
