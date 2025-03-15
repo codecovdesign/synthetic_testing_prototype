@@ -6,6 +6,7 @@ import AppPreview from './components/AppPreview/AppPreview';
 import SyntheticTestsPanel from './components/SyntheticTests/SyntheticTestsPanel';
 import Layout from './components/Layout/Layout';
 import PullRequestView from './components/PullRequestView';
+import SessionReplayView from './components/SessionReplay/SessionReplayView';
 
 const App = () => {
   const [currentTest, setCurrentTest] = useState<string | undefined>();
@@ -30,6 +31,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/pr/:id" element={<PullRequestView />} />
+        <Route path="/session-replay/*" element={<SessionReplayView />} />
         <Route path="/" element={<Layout />} />
       </Routes>
     </Router>
