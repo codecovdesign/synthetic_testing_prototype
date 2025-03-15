@@ -31,7 +31,11 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-const Layout = () => {
+interface LayoutProps {
+  children?: React.ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [currentTest, setCurrentTest] = useState<string | undefined>(undefined);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -77,31 +81,35 @@ const Layout = () => {
         <Navbar />
       </div>
       <div className="flex-1 ml-16">
-        <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
-          <Header />
-        </div>
-        <main className="flex bg-gray-50 h-[calc(100vh-64px)] gap-4 p-4">
-          <ErrorBoundary>
-            <div className="flex-1">
-              <AppPreview
-                key={`${currentTest}-${currentPage}`}
-                currentTest={currentTest}
-                isPlaying={isPlaying}
-                onTestComplete={handleTestComplete}
-                onPageChange={handlePageChange}
-              />
+        {children || (
+          <>
+            <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
+              <Header />
             </div>
-            <div className="w-[400px]">
-              <SyntheticTestsPanel
-                key={`${currentTest}-${currentPage}`}
-                onTestPlay={handleTestPlay}
-                onTestComplete={handleTestComplete}
-                currentTest={currentTest}
-                currentPage={currentPage}
-              />
-            </div>
-          </ErrorBoundary>
-        </main>
+            <main className="flex bg-gray-50 h-[calc(100vh-64px)] gap-4 p-4">
+              <ErrorBoundary>
+                <div className="flex-1">
+                  <AppPreview
+                    key={`${currentTest}-${currentPage}`}
+                    currentTest={currentTest}
+                    isPlaying={isPlaying}
+                    onTestComplete={handleTestComplete}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+                <div className="w-[400px]">
+                  <SyntheticTestsPanel
+                    key={`${currentTest}-${currentPage}`}
+                    onTestPlay={handleTestPlay}
+                    onTestComplete={handleTestComplete}
+                    currentTest={currentTest}
+                    currentPage={currentPage}
+                  />
+                </div>
+              </ErrorBoundary>
+            </main>
+          </>
+        )}
       </div>
     </div>
   );

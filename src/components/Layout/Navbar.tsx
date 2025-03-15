@@ -6,7 +6,7 @@ import { SentryLogo } from '../../components/Icons';
 const Navbar = () => {
   const location = useLocation();
   const isSessionReplay = location.pathname.startsWith('/session-replay');
-  const isBrowserTests = location.pathname === '/';
+  const isBrowserTests = location.pathname.startsWith('/browser-tests') || location.pathname === '/';
 
   return (
     <nav className="h-full flex flex-col items-center py-4 bg-[#584774]">
@@ -30,7 +30,7 @@ const Navbar = () => {
           <LightBulbIcon className="h-6 w-6" />
         </Link>
         <Link 
-          to="/" 
+          to="/browser-tests" 
           className={`text-white ${isBrowserTests ? 'opacity-100 bg-white/10 p-2 rounded-lg' : 'opacity-60 hover:opacity-100'}`}
         >
           <ShieldCheckIcon className="h-6 w-6" />
