@@ -57,6 +57,8 @@ const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false,
   const [currentTarget, setCurrentTarget] = useState<HTMLElement | null>(null);
   const [currentPage, setCurrentPage] = useState<PageKey>('checkout');
   const [showUrlDropdown, setShowUrlDropdown] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [showCursor, setShowCursor] = useState(false);
   const [errorDetails, setErrorDetails] = useState<{
     relatedIssues: string[];
     stackTrace: string;
@@ -165,6 +167,19 @@ const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false,
       }
     }
   }, [isPlaying, currentTest]);
+
+  useEffect(() => {
+    if (currentTarget) {
+      const rect = currentTarget.getBoundingClientRect();
+      setCursorPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      });
+      setShowCursor(true);
+    } else {
+      setShowCursor(false);
+    }
+  }, [currentTarget]);
 
   const handleApplyPromoCode = () => {
     const code = promoCode.toLowerCase();
@@ -407,6 +422,7 @@ const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false,
           )}
         </div>
       </div>
+      {showCursor && <MouseCursor position={cursorPosition} />}
     </div>
   );
 };

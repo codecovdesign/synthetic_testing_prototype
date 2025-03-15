@@ -9,12 +9,11 @@ const SessionReplayView = () => {
   const [selectedRepos, setSelectedRepos] = useState(['enigma']);
   const [selectedEnvs, setSelectedEnvs] = useState(['all']);
   const [searchQuery, setSearchQuery] = useState('');
-  const location = useLocation();
-  const isSelectorsTab = location.pathname.includes('/selectors');
+  const [activeTab, setActiveTab] = useState<'replays' | 'selectors'>('replays');
 
   useEffect(() => {
-    document.title = 'Sentry Browser Test PR-1234';
-  }, []);
+    document.title = activeTab === 'selectors' ? 'Sentry - Selectors' : 'Sentry - Session Replays';
+  }, [activeTab]);
 
   const renderFilters = () => (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-4 flex items-center gap-4">
@@ -55,7 +54,7 @@ const SessionReplayView = () => {
       <div className="flex-1">
         <input
           type="text"
-          placeholder={isSelectorsTab ? "Filter selectors..." : "Filter replays..."}
+          placeholder={activeTab === 'selectors' ? "Filter selectors..." : "Filter replays..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
@@ -74,32 +73,32 @@ const SessionReplayView = () => {
           <Header isSessionReplay />
           <div className="px-6 border-b border-gray-200">
             <nav className="flex space-x-8">
-              <Link
-                to="/session-replay"
+              <button
+                onClick={() => setActiveTab('replays')}
                 className={`py-4 px-1 text-sm font-medium ${
-                  !isSelectorsTab
+                  activeTab === 'replays'
                     ? 'border-[#584774] text-[#584774] border-b-2'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Replays
-              </Link>
-              <Link
-                to="/session-replay/selectors"
+              </button>
+              <button
+                onClick={() => setActiveTab('selectors')}
                 className={`py-4 px-1 text-sm font-medium ${
-                  isSelectorsTab
+                  activeTab === 'selectors'
                     ? 'border-[#584774] text-[#584774] border-b-2'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 Selectors
-              </Link>
+              </button>
             </nav>
           </div>
         </div>
         <main className="bg-gray-50 min-h-[calc(100vh-128px)] p-4">
           {renderFilters()}
-          {isSelectorsTab ? <SelectorsPanel /> : <SessionReplayPanel />}
+          {activeTab === 'replays' ? <SessionReplayPanel /> : <SelectorsPanel />}
         </main>
       </div>
     </div>

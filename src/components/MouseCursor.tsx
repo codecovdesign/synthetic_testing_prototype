@@ -1,71 +1,43 @@
 import React, { useEffect, useState } from 'react';
 
-interface Position {
-  x: number;
-  y: number;
-}
-
 interface MouseCursorProps {
-  isVisible: boolean;
-  targetElement?: HTMLElement | null;
-  onComplete?: () => void;
+  position: {
+    x: number;
+    y: number;
+  };
+  className?: string;
 }
 
-const MouseCursor: React.FC<MouseCursorProps> = ({ isVisible, targetElement, onComplete }) => {
-  const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (isVisible && targetElement && !isAnimating) {
-      setIsAnimating(true);
-      const rect = targetElement.getBoundingClientRect();
-      const targetX = rect.left + rect.width / 2;
-      const targetY = rect.top + rect.height / 2;
-
-      // Start from a natural position (top-left of the preview)
-      setPosition({ x: rect.left - 100, y: rect.top - 50 });
-
-      // Animate to target
-      setTimeout(() => {
-        setPosition({ x: targetX, y: targetY });
-        
-        // Simulate click after reaching target
-        setTimeout(() => {
-          setPosition(prev => ({ x: prev.x + 2, y: prev.y + 2 })); // Small movement for click effect
-          setTimeout(() => {
-            setPosition(prev => ({ x: prev.x - 2, y: prev.y - 2 }));
-            setIsAnimating(false);
-            if (onComplete) onComplete();
-          }, 200);
-        }, 500);
-      }, 100);
-    }
-  }, [isVisible, targetElement, onComplete]);
-
-  if (!isVisible) return null;
-
+const MouseCursor: React.FC<MouseCursorProps> = ({ position, className = '' }) => {
+  if (!position) return null;
+  
   return (
     <div
-      className="fixed pointer-events-none z-50 transition-all duration-500 ease-in-out"
+      className={`pointer-events-none ${className}`}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
-        left: -15,
-        top: -15,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: '20px',
+        height: '20px',
+        zIndex: 50,
       }}
     >
       <svg
-        width="30"
-        height="30"
-        viewBox="0 0 30 30"
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="drop-shadow-lg"
       >
         <path
-          d="M8.5 3.5L20.5 15.5L15.5 15.5L8.5 22.5V3.5Z"
-          fill="white"
-          stroke="black"
-          strokeWidth="2"
+          d="M5.07107 14.9289L14.9289 5.07107L16.3431 6.48528L6.48528 16.3431L5.07107 14.9289Z"
+          fill="black"
+        />
+        <path
+          d="M1 1L1 10.4142L2.41421 11.8284L2.41421 2.41421L11.8284 2.41421L10.4142 1L1 1Z"
+          fill="black"
         />
       </svg>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlayIcon, ArrowTopRightOnSquareIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { useNavigate } from 'react-router-dom';
 
 interface ReplayData {
   id: string;
@@ -16,12 +17,13 @@ interface ReplayData {
   status: 'success' | 'error';
   issueId?: string;
   issueTitle?: string;
+  testName?: string;
 }
 
 const mockReplays: ReplayData[] = [
   {
     id: '1',
-    name: 'Checkout Flow Error',
+    name: '68.195.30.244',
     os: 'macOS 13.1',
     browser: 'Chrome 120',
     duration: '2m 45s',
@@ -32,11 +34,12 @@ const mockReplays: ReplayData[] = [
     hasTest: true,
     status: 'error',
     issueId: 'SYNT-123',
-    issueTitle: 'Checkout flow fails on payment submission'
+    issueTitle: 'Checkout flow fails on payment submission',
+    testName: 'Confirmation Modal'
   },
   {
     id: '2',
-    name: 'Login Failure',
+    name: '72.134.56.89',
     os: 'Windows 11',
     browser: 'Firefox 123',
     duration: '1m 30s',
@@ -49,7 +52,7 @@ const mockReplays: ReplayData[] = [
   },
   {
     id: '3',
-    name: 'Payment Processing',
+    name: '192.168.1.105',
     os: 'iOS 17.2',
     browser: 'Safari 17',
     duration: '3m 15s',
@@ -58,11 +61,12 @@ const mockReplays: ReplayData[] = [
     errors: 0,
     activity: Math.floor(Math.random() * 10) + 1,
     hasTest: true,
-    status: 'success'
+    status: 'success',
+    testName: 'User Settings Flow'
   },
   {
     id: '4',
-    name: 'Account Creation',
+    name: '45.67.89.123',
     os: 'Android 14',
     browser: 'Chrome Mobile 120',
     duration: '4m 10s',
@@ -75,7 +79,7 @@ const mockReplays: ReplayData[] = [
   },
   {
     id: '5',
-    name: 'Product Search',
+    name: '103.44.56.78',
     os: 'macOS 14.0',
     browser: 'Safari 17',
     duration: '1m 55s',
@@ -84,11 +88,12 @@ const mockReplays: ReplayData[] = [
     errors: 0,
     activity: Math.floor(Math.random() * 10) + 1,
     hasTest: true,
-    status: 'success'
+    status: 'success',
+    testName: 'Account Settings'
   },
   {
     id: '6',
-    name: 'Cart Abandonment',
+    name: '156.78.90.234',
     os: 'Windows 10',
     browser: 'Edge 120',
     duration: '2m 20s',
@@ -101,7 +106,7 @@ const mockReplays: ReplayData[] = [
   },
   {
     id: '7',
-    name: 'Password Reset',
+    name: '91.234.12.45',
     os: 'Linux Ubuntu',
     browser: 'Firefox 123',
     duration: '1m 15s',
@@ -114,7 +119,7 @@ const mockReplays: ReplayData[] = [
   },
   {
     id: '8',
-    name: 'Shipping Info',
+    name: '172.16.45.89',
     os: 'macOS 13.2',
     browser: 'Chrome 120',
     duration: '2m 50s',
@@ -125,11 +130,12 @@ const mockReplays: ReplayData[] = [
     hasTest: true,
     status: 'success',
     issueId: 'SYNT-456',
-    issueTitle: 'Address validation fails for international addresses'
+    issueTitle: 'Address validation fails for international addresses',
+    testName: 'Shipping Address Form'
   },
   {
     id: '9',
-    name: 'Order Review',
+    name: '10.0.12.167',
     os: 'Windows 11',
     browser: 'Chrome 120',
     duration: '1m 40s',
@@ -142,7 +148,7 @@ const mockReplays: ReplayData[] = [
   },
   {
     id: '10',
-    name: 'Profile Update',
+    name: '192.168.0.234',
     os: 'macOS 14.1',
     browser: 'Safari 17',
     duration: '2m 05s',
@@ -151,7 +157,8 @@ const mockReplays: ReplayData[] = [
     errors: 0,
     activity: Math.floor(Math.random() * 10) + 1,
     hasTest: true,
-    status: 'success'
+    status: 'success',
+    testName: 'Profile Settings'
   }
 ].map(replay => ({
   ...replay,
@@ -190,6 +197,7 @@ const ActivityBars = ({ value }: { value: number }) => {
 };
 
 const SessionReplayPanel = () => {
+  const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
@@ -268,12 +276,13 @@ const SessionReplayPanel = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedReplays.map((replay) => (
-              <tr key={replay.id} className="hover:bg-gray-50">
+              <tr
+                key={replay.id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => navigate(`/session-replay/${replay.id}`, { state: { replay } })}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <PlayIcon className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-sm font-medium text-gray-900">{replay.name}</span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900">{replay.name}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.os}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.browser}</td>
@@ -292,6 +301,11 @@ const SessionReplayPanel = () => {
                         <span className={`text-sm ${replay.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
                           {replay.status === 'success' ? 'Passing' : 'Failing'}
                         </span>
+                        {replay.testName && (
+                          <span className="text-gray-500 ml-2">
+                            {replay.testName}
+                          </span>
+                        )}
                       </div>
                       {replay.status === 'error' && replay.issueId && (
                         <div className="flex items-center gap-2 pl-4 text-xs">
@@ -307,7 +321,13 @@ const SessionReplayPanel = () => {
                       )}
                     </div>
                   ) : (
-                    <button className="text-gray-500 hover:text-gray-700 font-medium text-sm text-left">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle create test action
+                      }}
+                      className="text-gray-500 hover:text-gray-700 font-medium text-sm text-left"
+                    >
                       Create as Test
                     </button>
                   )}
