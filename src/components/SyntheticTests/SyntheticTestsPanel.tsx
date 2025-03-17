@@ -114,13 +114,48 @@ const TestResult = ({ name, status, details, issueLink, stackTrace, isPlaying, o
               </div>
             </div>
           )}
+          <details className="mt-2">
+            <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">Recorded Events</summary>
+            <div className="mt-2 pl-4 text-sm text-gray-600">
+              {name === 'Apply SAVE20' && (
+                <>
+                  <p>• input#promo-code.value = "SAVE20"</p>
+                  <p>• button#apply-promo.click()</p>
+                  <p>• span#total-price.innerText = "$80"</p>
+                  <p>• div#promo-confirmation.innerText = "Discount Applied!"</p>
+                </>
+              )}
+              {name === 'Apply SAVE50' && (
+                <>
+                  <p className="text-red-600">• input#promo-code.value = "SAVE50" (Error: Redis connection timeout)</p>
+                  <p className="text-red-600">• button#apply-promo.click() (Not executed)</p>
+                  <p className="text-red-600">• span#total-price.innerText = "$100" (Not executed)</p>
+                  <p className="text-red-600">• div#promo-error.innerText = "Invalid Promo Code" (Not executed)</p>
+                </>
+              )}
+              {name === 'Purchase Completion' && (
+                <>
+                  <p>• User enters payment details</p>
+                  <p>• Purchase completed</p>
+                  <p>• Order confirmation shown</p>
+                </>
+              )}
+            </div>
+          </details>
         </>
       )}
     </div>
-    <div className="absolute right-4 top-3">
+    <div className="flex-shrink-0">
       <button
-        onClick={onPlayToggle}
-        className={`flex-shrink-0 p-2 rounded-full ${isPlaying ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'} hover:bg-opacity-75`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPlayToggle();
+        }}
+        className={`p-2 rounded-full ${
+          isPlaying 
+            ? 'bg-red-100 text-red-600 hover:bg-red-200' 
+            : 'bg-[#584774] text-white hover:bg-[#6C5B8E]'
+        }`}
       >
         {isPlaying ? (
           <StopIcon className="h-5 w-5" />
