@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { PlayIcon, ArrowTopRightOnSquareIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, ArrowTopRightOnSquareIcon, ChevronUpIcon, ChevronDownIcon, ArrowUpIcon } from '@heroicons/react/24/solid';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
+import ReplayTestingAside from './ReplayTestingAside';
 
 interface ReplayData {
   id: string;
@@ -159,13 +160,150 @@ const mockReplays: ReplayData[] = [
     hasTest: true,
     status: 'success',
     testName: 'Profile Settings'
+  },
+  {
+    id: '11',
+    name: '203.0.113.1',
+    os: 'Windows 11',
+    browser: 'Chrome 120',
+    duration: '3m 20s',
+    deadClicks: 2,
+    rageClicks: 1,
+    errors: 1,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: true,
+    status: 'error',
+    issueId: 'SYNT-789',
+    issueTitle: 'Payment processing timeout',
+    testName: 'Payment Flow'
+  },
+  {
+    id: '12',
+    name: '198.51.100.2',
+    os: 'macOS 14.0',
+    browser: 'Safari 17',
+    duration: '4m 15s',
+    deadClicks: 0,
+    rageClicks: 0,
+    errors: 0,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: false,
+    status: 'success'
+  },
+  {
+    id: '13',
+    name: '192.0.2.3',
+    os: 'Windows 10',
+    browser: 'Edge 120',
+    duration: '1m 55s',
+    deadClicks: 1,
+    rageClicks: 0,
+    errors: 0,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: true,
+    status: 'success',
+    testName: 'Search Results'
+  },
+  {
+    id: '14',
+    name: '203.0.113.4',
+    os: 'iOS 17.2',
+    browser: 'Safari 17',
+    duration: '2m 30s',
+    deadClicks: 5,
+    rageClicks: 3,
+    errors: 2,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: false,
+    status: 'error'
+  },
+  {
+    id: '15',
+    name: '198.51.100.5',
+    os: 'Android 14',
+    browser: 'Chrome Mobile 120',
+    duration: '3m 45s',
+    deadClicks: 0,
+    rageClicks: 0,
+    errors: 0,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: true,
+    status: 'success',
+    testName: 'Mobile Navigation'
+  },
+  {
+    id: '16',
+    name: '192.0.2.6',
+    os: 'Linux Ubuntu',
+    browser: 'Firefox 123',
+    duration: '2m 10s',
+    deadClicks: 2,
+    rageClicks: 1,
+    errors: 1,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: false,
+    status: 'error'
+  },
+  {
+    id: '17',
+    name: '203.0.113.7',
+    os: 'macOS 13.2',
+    browser: 'Chrome 120',
+    duration: '1m 40s',
+    deadClicks: 0,
+    rageClicks: 0,
+    errors: 0,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: true,
+    status: 'success',
+    testName: 'User Preferences'
+  },
+  {
+    id: '18',
+    name: '198.51.100.8',
+    os: 'Windows 11',
+    browser: 'Edge 120',
+    duration: '2m 55s',
+    deadClicks: 3,
+    rageClicks: 2,
+    errors: 1,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: false,
+    status: 'error'
+  },
+  {
+    id: '19',
+    name: '192.0.2.9',
+    os: 'iOS 17.1',
+    browser: 'Safari 17',
+    duration: '3m 10s',
+    deadClicks: 0,
+    rageClicks: 0,
+    errors: 0,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: true,
+    status: 'success',
+    testName: 'Mobile Checkout'
+  },
+  {
+    id: '20',
+    name: '203.0.113.10',
+    os: 'Android 13',
+    browser: 'Chrome Mobile 120',
+    duration: '2m 25s',
+    deadClicks: 4,
+    rageClicks: 3,
+    errors: 2,
+    activity: Math.floor(Math.random() * 10) + 1,
+    hasTest: false,
+    status: 'error'
   }
 ].map(replay => ({
   ...replay,
   status: replay.errors > 0 ? 'error' as const : 'success' as const
 }));
 
-type SortField = 'name' | 'os' | 'browser' | 'duration' | 'deadClicks' | 'rageClicks' | 'errors' | 'activity' | 'browserTest';
+type SortField = 'name' | 'os' | 'browser' | 'duration' | 'deadClicks' | 'rageClicks' | 'errors' | 'activity' | 'hasTest' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 const getActivityColor = (activity: string) => {
@@ -200,10 +338,13 @@ const SessionReplayPanel = () => {
   const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [testFilter, setTestFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('asc');
@@ -211,131 +352,131 @@ const SessionReplayPanel = () => {
   };
 
   const sortedReplays = [...mockReplays].sort((a, b) => {
-    const direction = sortDirection === 'asc' ? 1 : -1;
-
-    if (sortField === 'browserTest') {
-      // Sort by test status: failing tests first, then passing tests, then no tests
-      if (a.hasTest && !b.hasTest) return -1 * direction;
-      if (!a.hasTest && b.hasTest) return 1 * direction;
-      if (a.hasTest && b.hasTest) {
-        if (a.status === 'error' && b.status === 'success') return -1 * direction;
-        if (a.status === 'success' && b.status === 'error') return 1 * direction;
-      }
-      return 0;
-    }
-
     const aValue = a[sortField];
     const bValue = b[sortField];
+    const direction = sortDirection === 'asc' ? 1 : -1;
 
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return aValue.localeCompare(bValue) * direction;
+    if (sortField === 'hasTest') {
+      return direction * (a.hasTest === b.hasTest ? 0 : a.hasTest ? 1 : -1);
     }
-    if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return (aValue - bValue) * direction;
+
+    if (typeof aValue === 'string') {
+      return direction * (aValue.localeCompare(bValue as string));
     }
-    return 0;
+
+    return direction * ((aValue as number) - (bValue as number));
   });
 
-  const renderSortIcon = (field: SortField) => {
-    if (field !== sortField) return null;
-    return sortDirection === 'asc' ? (
-      <ChevronUpIcon className="h-4 w-4 ml-1" />
-    ) : (
-      <ChevronDownIcon className="h-4 w-4 ml-1" />
-    );
-  };
-
-  const renderSortableHeader = (field: SortField, label: string) => (
+  const renderSortableHeader = (label: string, field: SortField) => (
     <th
-      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+      scope="col"
+      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 cursor-pointer"
       onClick={() => handleSort(field)}
     >
-      <div className="flex items-center">
+      <div className="group inline-flex">
         {label}
-        {renderSortIcon(field)}
+        <span className="ml-2 flex-none rounded text-gray-400">
+          {sortField === field ? (
+            sortDirection === 'asc' ? (
+              <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
+            )
+          ) : (
+            <ChevronUpIcon className="h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+          )}
+        </span>
       </div>
     </th>
   );
 
+  const filteredReplays = sortedReplays.filter(replay => {
+    const statusMatch = statusFilter === 'all' || replay.status === statusFilter;
+    const testMatch = testFilter === 'all' || (replay.hasTest ? 'hasTest' : 'noTest') === testFilter;
+    const searchMatch = replay.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return statusMatch && testMatch && searchMatch;
+  });
+
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {renderSortableHeader('name', 'Replay')}
-              {renderSortableHeader('os', 'OS')}
-              {renderSortableHeader('browser', 'Browser')}
-              {renderSortableHeader('duration', 'Duration')}
-              {renderSortableHeader('deadClicks', 'Dead Clicks')}
-              {renderSortableHeader('rageClicks', 'Rage Clicks')}
-              {renderSortableHeader('errors', 'Errors')}
-              {renderSortableHeader('activity', 'Activity')}
-              {renderSortableHeader('browserTest', 'Browser Test')}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sortedReplays.map((replay) => (
-              <tr
-                key={replay.id}
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/session-replay/${replay.id}`, { state: { replay } })}
-              >
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm font-medium text-gray-900">{replay.name}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.os}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.browser}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.duration}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.deadClicks}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.rageClicks}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{replay.errors}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <ActivityBars value={replay.activity} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {replay.hasTest ? (
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${replay.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
-                        <span className={`text-sm ${replay.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                          {replay.status === 'success' ? 'Passing' : 'Failing'}
-                        </span>
-                        {replay.testName && (
-                          <span className="text-gray-500 ml-2">
-                            {replay.testName}
-                          </span>
-                        )}
-                      </div>
-                      {replay.status === 'error' && replay.issueId && (
-                        <div className="flex items-center gap-2 pl-4 text-xs">
-                          <a href="#" className="text-blue-600 hover:text-blue-800">
-                            {replay.issueId}
-                          </a>
-                          <span className="text-gray-400">|</span>
-                          <a href="#" className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
-                            <span role="img" aria-label="autofix" className="text-yellow-500">💡</span>
-                            <span>autofix</span>
-                          </a>
-                        </div>
-                      )}
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex flex-col h-screen">
+        <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <div className="px-4 sm:px-6 lg:px-8 py-4">
+              <div className="mt-8 flex flex-col">
+                <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                      <table className="min-w-full divide-y divide-gray-300">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            {renderSortableHeader('Name', 'name')}
+                            {renderSortableHeader('OS', 'os')}
+                            {renderSortableHeader('Browser', 'browser')}
+                            {renderSortableHeader('Duration', 'duration')}
+                            {renderSortableHeader('Dead Clicks', 'deadClicks')}
+                            {renderSortableHeader('Rage Clicks', 'rageClicks')}
+                            {renderSortableHeader('Errors', 'errors')}
+                            {renderSortableHeader('Activity', 'activity')}
+                            {renderSortableHeader('Browser Test', 'hasTest')}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {filteredReplays.map((replay) => (
+                            <tr
+                              key={replay.id}
+                              onClick={() => navigate(`/session-replay/${replay.id}`, { state: { replay } })}
+                              className="hover:bg-gray-50 cursor-pointer"
+                            >
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                <div className="flex items-center">
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{replay.name}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.os}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.browser}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.duration}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.deadClicks}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.rageClicks}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.errors}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{replay.activity}</td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                {replay.hasTest ? (
+                                  <div className="flex items-center">
+                                    <div className={`w-2 h-2 rounded-full mr-2 ${replay.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    <span className={replay.status === 'success' ? 'text-green-600' : 'text-red-600'}>
+                                      {replay.testName}
+                                    </span>
+                                    {replay.issueId && (
+                                      <a
+                                        href={`/issues/${replay.issueId}`}
+                                        className="ml-2 text-gray-400 hover:text-gray-500"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                                      </a>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center">
+                                    <span className="text-gray-500">No test</span>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle create test action
-                      }}
-                      className="text-gray-500 hover:text-gray-700 font-medium text-sm text-left"
-                    >
-                      Create as Test
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ReplayTestingAside />
+        </div>
       </div>
     </div>
   );
