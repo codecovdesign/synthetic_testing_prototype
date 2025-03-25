@@ -1,11 +1,13 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import PullRequestView from './components/PullRequestView';
 import SessionReplayView from './components/SessionReplay/SessionReplayView';
 import SessionReplayDetail from './components/SessionReplay/SessionReplayDetail';
 import BrowserTestsPage from './components/SyntheticTests/BrowserTestsPage';
 import BrowserTestsLayout from './components/SyntheticTests/BrowserTestsLayout';
+import IssuesPage from './components/Issues/IssuesPage';
+import BrowserTestDetail from './components/SyntheticTests/BrowserTestDetail';
 
 const App = () => {
   return (
@@ -23,14 +25,17 @@ const App = () => {
               </BrowserTestsLayout>
             </Layout>
           } />
-          <Route path="/browser-tests/:id" element={
+          <Route path="/browser-tests/:testId" element={
             <Layout>
-              <BrowserTestsLayout>
-                <div>Test Details Page (Coming Soon)</div>
-              </BrowserTestsLayout>
+              <BrowserTestDetail />
             </Layout>
           } />
           <Route path="/" element={<Layout />} index />
+          <Route path="/issues" element={
+            <Layout>
+              <IssuesPage />
+            </Layout>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
