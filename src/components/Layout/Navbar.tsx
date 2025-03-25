@@ -7,16 +7,20 @@ const Navbar = () => {
   const location = useLocation();
   const isSessionReplay = location.pathname.startsWith('/session-replay');
   const isBrowserTests = location.pathname.startsWith('/browser-tests') || location.pathname === '/';
+  const isIssues = location.pathname === '/issues';
 
   return (
     <nav className="h-full flex flex-col items-center py-4 bg-[#584774]">
-      <div className="mb-8">
+      <div className="mb-8 text-white">
         <SentryLogo />
       </div>
       <div className="flex flex-col items-center gap-6">
-        <button className="text-white opacity-60 hover:opacity-100">
+        <Link 
+          to="/issues" 
+          className={`text-white ${isIssues ? 'opacity-100 bg-white/10 p-2 rounded-lg' : 'opacity-60 hover:opacity-100'}`}
+        >
           <DocumentTextIcon className="h-6 w-6" />
-        </button>
+        </Link>
         <button className="text-white opacity-60 hover:opacity-100">
           <FolderIcon className="h-6 w-6" />
         </button>
