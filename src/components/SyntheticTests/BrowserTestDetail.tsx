@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
 import Navbar from '../Layout/Navbar';
 import { mockTests } from './BrowserTestsPage';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
+import { ChevronDownIcon, ChevronRightIcon, XMarkIcon, ArrowTopRightOnSquareIcon, Cog6ToothIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
+import { Menu } from '@headlessui/react';
+import AppPreview from '../AppPreview/AppPreview';
 
 // Import the form components from SessionReplayDetail
 const SignupForm = ({ className = '' }: { className?: string }) => (
@@ -352,16 +354,144 @@ const getTestSlug = (testName: string): string => {
     .replace(/[^a-z0-9-]/g, '');
 };
 
-export default function BrowserTestDetail() {
+interface EnvironmentStatus {
+  name: string;
+  status: 'success' | 'error';
+}
+
+interface BrowserTestDetailProps {
+  testName?: string;
+  status?: 'success' | 'error';
+  environments?: EnvironmentStatus[];
+  onEnvironmentConfigChange?: (environments: EnvironmentStatus[]) => void;
+  onTestPlay?: (testName: string) => void;
+  onTestComplete?: (testName: string) => void;
+  currentTest?: string;
+  details?: string;
+  issueLink?: string;
+  stackTrace?: string;
+}
+
+const EnvironmentStatusBadge = ({ environment }: { environment: EnvironmentStatus }) => (
+  <div className="flex items-center gap-2">
+    <div className={`w-2 h-2 rounded-full ${environment.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+    <span className="text-sm text-gray-600">{environment.name}</span>
+    <span className={`text-sm ${environment.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+      {environment.status === 'success' ? 'Passing' : 'Failing'}
+    </span>
+  </div>
+);
+
+const ConfigurationModal = ({ 
+  isOpen, 
+  onClose, 
+  environments, 
+  onSave 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  environments: EnvironmentStatus[];
+  onSave: (environments: EnvironmentStatus[]) => void;
+}) => {
+  const [selectedEnvironments, setSelectedEnvironments] = useState<EnvironmentStatus[]>(environments);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Test Configuration</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Environments
+          </label>
+          <div className="space-y-2">
+            {['Staging', 'Production'].map((env) => (
+              <label key={env} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={selectedEnvironments.some(e => e.name === env)}
+                  onChange={() => {
+                    setSelectedEnvironments(prev => {
+                      const exists = prev.some(e => e.name === env);
+                      if (exists) {
+                        return prev.filter(e => e.name !== env);
+                      }
+                      return [...prev, { name: env, status: 'success' }];
+                    });
+                  }}
+                  className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">{env}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onSave(selectedEnvironments);
+              onClose();
+            }}
+            className="px-4 py-2 bg-[#584774] text-white rounded-md hover:bg-[#6C5B8E]"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BrowserTestDetail: React.FC<BrowserTestDetailProps> = ({
+  testName,
+  status,
+  environments,
+  onEnvironmentConfigChange,
+  onTestPlay,
+  onTestComplete,
+  currentTest,
+  details,
+  issueLink,
+  stackTrace
+}) => {
   const { testId } = useParams();
-  const location = useLocation();
+  const test = mockTests.find(t => t.id === testId);
+  const navigate = useNavigate();
+
+  // If no test is found, show a loading state or error
+  if (!test) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-gray-500">Test not found</div>
+      </div>
+    );
+  }
+
+  // Use the test data from the URL parameter
+  const currentTestName = test.name;
+  const currentStatus = test.status;
+  const currentEnvironments = test.environments;
+  const currentUrl = test.url;
+
   const [activeTab, setActiveTab] = useState('breadcrumbs');
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);
-  const [url, setUrl] = useState('example.com/checkout');
+  const [url, setUrl] = useState(currentUrl);
   const [promoCode, setPromoCode] = useState('');
   const [appliedCode, setAppliedCode] = useState('');
   const [discount, setDiscount] = useState(0);
@@ -373,30 +503,49 @@ export default function BrowserTestDetail() {
   const applyButtonRef = useRef<HTMLButtonElement>(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const [isTestExpanded, setIsTestExpanded] = useState(false);
-
-  // Get the actual test data
-  const test = mockTests.find(t => t.id === testId);
-  const testName = test?.name?.toLowerCase() || '';
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    environments: [],
+    schedule: 'daily',
+    time: '00:00',
+    days: ['monday'],
+    emailNotifications: [],
+    slackNotifications: [],
+    retryCount: 3,
+    timeout: 30,
+    screenshotOnFailure: true,
+    videoRecording: true,
+    networkConditions: 'fast',
+    viewport: 'desktop',
+    customHeaders: '',
+    tags: '',
+    notes: ''
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const resetForm = () => {
-    if (testName.includes('save20') || testName.includes('save50')) {
-      const promoInput = document.getElementById('promo') as HTMLInputElement;
-      if (promoInput) {
-        promoInput.value = '';
-        setPromoCode('');
-        setAppliedCode('');
-        setDiscount(0);
-        setError('');
-      }
-    } else if (testName.includes('add to cart')) {
-      setAddedToCart(false);
-    } else {
-      // Default login form reset
-      const emailInput = document.getElementById('email') as HTMLInputElement;
-      const passwordInput = document.getElementById('password') as HTMLInputElement;
-      if (emailInput) emailInput.value = '';
-      if (passwordInput) passwordInput.value = '';
-    }
+    setFormData({
+      name: currentTestName,
+      description: '',
+      environments: [],
+      schedule: 'daily',
+      time: '00:00',
+      days: ['monday'],
+      emailNotifications: [],
+      slackNotifications: [],
+      retryCount: 3,
+      timeout: 30,
+      screenshotOnFailure: true,
+      videoRecording: true,
+      networkConditions: 'fast',
+      viewport: 'desktop',
+      customHeaders: '',
+      tags: '',
+      notes: ''
+    });
+    setFormErrors({});
   };
 
   const animate = (timestamp: number) => {
@@ -410,7 +559,7 @@ export default function BrowserTestDetail() {
     if (previewRef.current) {
       const rect = previewRef.current.getBoundingClientRect();
 
-      if (testName.includes('save20')) {
+      if (currentTestName.includes('save20')) {
         // Animation sequence for SAVE20
         const promoInput = document.getElementById('promo') as HTMLInputElement;
         const applyButton = document.getElementById('apply-promo');
@@ -440,7 +589,7 @@ export default function BrowserTestDetail() {
             }
           }
         }
-      } else if (testName.includes('save50')) {
+      } else if (currentTestName.includes('save50')) {
         // Animation sequence for SAVE50
         const promoInput = document.getElementById('promo') as HTMLInputElement;
         const applyButton = document.getElementById('apply-promo');
@@ -471,7 +620,7 @@ export default function BrowserTestDetail() {
             }
           }
         }
-      } else if (testName.includes('add to cart')) {
+      } else if (currentTestName.includes('add to cart')) {
         // Animation sequence for Add to Cart
         const addToCartButton = document.getElementById('add-to-cart');
 
@@ -557,12 +706,12 @@ export default function BrowserTestDetail() {
       {
         event: 'Page Load',
         timestamp: '00:00',
-        path: test?.url || '/checkout',
+        path: url,
       }
     ];
 
     // Add test-specific breadcrumbs
-    if (testName.includes('save50')) {
+    if (currentTestName.includes('save50')) {
       mockBreadcrumbs.push(
         {
           event: 'Input Value Change',
@@ -596,7 +745,7 @@ export default function BrowserTestDetail() {
           html: '<div id="promo-error">Invalid Promo Code</div>'
         }
       );
-    } else if (testName.includes('save20')) {
+    } else if (currentTestName.includes('save20')) {
       mockBreadcrumbs.push(
         {
           event: 'Input Value Change',
@@ -619,7 +768,7 @@ export default function BrowserTestDetail() {
           html: '<div id="discount-success">Promo code SAVE20 applied successfully!</div>'
         }
       );
-    } else if (testName.includes('add to cart')) {
+    } else if (currentTestName.includes('add to cart')) {
       mockBreadcrumbs.push(
         {
           event: 'User Click',
@@ -700,6 +849,79 @@ export default function BrowserTestDetail() {
             ))}
           </div>
         );
+      case 'source':
+        return (
+          <div className="source-code">
+            <pre>
+              <code>
+                {currentTestName.includes('checkout') ? `// Checkout flow test
+describe('Checkout Flow', () => {
+  it('should complete checkout process', () => {
+    // Test implementation
+  });
+});` : currentTestName.includes('products') ? `// Product listing test
+describe('Product Listing', () => {
+  it('should display products correctly', () => {
+    // Test implementation
+  });
+});` : currentTestName.includes('cart') ? `// Shopping cart test
+describe('Shopping Cart', () => {
+  it('should manage cart items', () => {
+    // Test implementation
+  });
+});` : `// Account management test
+describe('Account Management', () => {
+  it('should handle user account operations', () => {
+    // Test implementation
+  });
+});`}
+              </code>
+            </pre>
+          </div>
+        );
+      case 'test-source':
+        return (
+          <div className="test-source">
+            <h3>Test Source</h3>
+            <div className="source-code">
+              <pre>
+                <code>
+                  {currentTestName.includes('save20') ? `// Save 20% test
+describe('Save 20% Banner', () => {
+  it('should display and apply discount', () => {
+    // Test implementation
+  });
+});` : `// Standard test
+describe('${currentTestName}', () => {
+  it('should execute successfully', () => {
+    // Test implementation
+  });
+});`}
+                </code>
+              </pre>
+            </div>
+          </div>
+        );
+      case 'test-actions':
+        return (
+          <div className="test-actions">
+            <button className="action-button">
+              <i className="fas fa-play"></i>
+              Run Test
+            </button>
+            <button 
+              className="action-button"
+              onClick={() => window.open(`https://github.com/codecovdesign/synthetic_testing_prototype/blob/main/tests/${getTestSlug(currentTestName)}.spec.ts`, '_blank')}
+            >
+              <i className="fas fa-code-branch"></i>
+              View in GitHub
+            </button>
+            <button className="action-button">
+              <i className="fas fa-history"></i>
+              View History
+            </button>
+          </div>
+        );
       default:
         return (
           <div className="p-4">
@@ -710,205 +932,281 @@ export default function BrowserTestDetail() {
   };
 
   const renderPreview = () => {
-    if (testName.includes('save20') || testName.includes('save50')) {
+    if (!currentTestName) return null;
+
+    if (currentTestName.includes('save20')) {
       return (
-        <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-lg p-6 border border-blue-100">
-          <DiscountPreview 
-            promoCode={promoCode}
-            setPromoCode={setPromoCode}
-            appliedCode={appliedCode}
-            setAppliedCode={setAppliedCode}
-            discount={discount}
-            setDiscount={setDiscount}
-            error={error}
-            setError={setError}
-          />
+        <div className="preview-content">
+          <div className="promo-section">
+            <h2>Apply Promo Code</h2>
+            <div className="promo-input">
+              <input
+                type="text"
+                id="promo"
+                placeholder="Enter promo code"
+                value={promoCode}
+                readOnly
+              />
+              <button id="apply-promo">Apply</button>
+            </div>
+            {error && <div className="error">{error}</div>}
+            {appliedCode && (
+              <div className="success">
+                Applied {appliedCode} - {discount}% off!
+              </div>
+            )}
+          </div>
         </div>
       );
-    } else if (testName.includes('add to cart')) {
-      return <ProductList />;
-    } else {
-      return <LoginForm className="mt-0" />;
     }
+
+    if (currentTestName.includes('save50')) {
+      return (
+        <div className="preview-content">
+          <div className="promo-section">
+            <h2>Apply Promo Code</h2>
+            <div className="promo-input">
+              <input
+                type="text"
+                id="promo"
+                placeholder="Enter promo code"
+                value={promoCode}
+                readOnly
+              />
+              <button id="apply-promo">Apply</button>
+            </div>
+            {error && <div className="error">{error}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    if (currentTestName.includes('add to cart')) {
+      return (
+        <div className="preview-content">
+          <div className="product-section">
+            <h2>Product Details</h2>
+            <div className="product-info">
+              <h3>Premium Widget</h3>
+              <p className="price">$99.99</p>
+              <button id="add-to-cart" className={addedToCart ? 'added' : ''}>
+                {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="preview-content">
+        <div className="login-section">
+          <h2>Login</h2>
+          <form className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input type="email" id="email" placeholder="Enter your email" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input type="password" id="password" placeholder="Enter your password" />
+            </div>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="h-screen flex">
-      <div className="w-16 flex-shrink-0 fixed left-0 top-0 h-full bg-white z-50 border-r border-gray-200">
-        <Navbar />
-      </div>
-      <div className="flex-1">
-        <div className="sticky top-0 bg-white z-40">
-          <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-            <Breadcrumb
-              items={[
-                { label: 'Browser Tests', to: '/browser-tests' },
-                { label: test?.name || `Test ${testId}` },
-              ]}
-            />
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${test?.status === 'passed' ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className={`text-sm font-medium ${test?.status === 'passed' ? 'text-green-600' : 'text-red-600'}`}>
-                {test?.status === 'passed' ? 'Passing' : 'Failing'}
-              </span>
-            </div>
-          </header>
-          <div className="bg-gray-50 border-b border-gray-200 px-6 py-2 flex items-center">
-            <div className="flex items-center flex-1 max-w-3xl mx-auto">
-              <svg className="h-4 w-4 text-gray-400 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-              <input
-                type="text"
-                value={test?.url || url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
-              />
+    <div className="flex flex-col h-full">
+      <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
+        <Breadcrumb
+          items={[
+            { label: 'Browser Tests', to: '/browser-tests' },
+            { label: currentTestName },
+          ]}
+        />
+      </header>
+
+      <div className="flex-1 flex">
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 bg-white p-6">
+            <div className="h-full flex flex-col">
+              <div className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <AppPreview
+                  currentTest={currentTestName}
+                  isPlaying={isPlaying}
+                  onTestComplete={() => {
+                    setIsPlaying(false);
+                    if (onTestComplete) onTestComplete(currentTestName);
+                  }}
+                  currentPage={currentUrl.split('/')[1]}
+                />
+              </div>
             </div>
           </div>
         </div>
-        <main className="flex bg-gray-50 h-[calc(100vh-64px)] gap-4 p-4">
-          {/* Main Preview Section */}
-          <div className="flex-1">
-            <div className="bg-white rounded-lg shadow-sm h-full flex flex-col">
-              {/* Preview Area */}
-              <div className="flex-1 p-6 relative" ref={previewRef}>
-                <div className="max-w-2xl mx-auto">
-                  {renderPreview()}
-                </div>
-                {showCursor && (
-                  <MouseCursor
-                    position={cursorPosition}
-                    className="absolute pointer-events-none"
-                  />
-                )}
+
+        <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
+          <div className="p-6">
+            {/* Run Test Button */}
+            <button
+              onClick={() => {
+                setIsPlaying(!isPlaying);
+                if (onTestPlay) onTestPlay(currentTestName);
+              }}
+              className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3a61] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] mb-6"
+            >
+              {isPlaying ? (
+                <>
+                  <PauseIcon className="h-4 w-4 mr-2" />
+                  Pause Test
+                </>
+              ) : (
+                <>
+                  <PlayIcon className="h-4 w-4 mr-2" />
+                  Run Test
+                </>
+              )}
+            </button>
+
+            {/* Environment Status Section */}
+            <div className="mb-6 bg-gray-50 rounded-md p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-gray-500">Environment Status</h3>
+                <button
+                  onClick={() => setShowConfigModal(true)}
+                  className="text-sm text-[#584774] hover:text-[#4a3a61]"
+                >
+                  Configure
+                </button>
               </div>
-              
-              {/* Playback Controls */}
-              <div className="border-t border-gray-200 p-4">
-                <div className="flex items-center gap-4">
+              <hr className="border-gray-200 mb-3" />
+              <div className="space-y-3">
+                {['Staging', 'Production'].map((envName) => {
+                  const env = currentEnvironments.find(e => e.name === envName);
+                  return (
+                    <div key={envName} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">{envName}</span>
+                      {env ? (
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${env.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+                          <span className={`text-sm font-medium ${env.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                            {env.status === 'success' ? 'Passing' : 'Failing'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">Not testing</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Test Source Section */}
+            <div className="mb-6 bg-gray-50 rounded-md p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={handlePlayPause}
-                    className="p-2 rounded-full hover:bg-gray-100"
+                    onClick={() => setIsTestExpanded(!isTestExpanded)}
+                    className="text-gray-500 hover:text-gray-700"
                   >
-                    {isPlaying ? (
-                      <PauseIcon className="h-5 w-5 text-gray-600" />
+                    {isTestExpanded ? (
+                      <ChevronDownIcon className="h-4 w-4" />
                     ) : (
-                      <PlayIcon className="h-5 w-5 text-gray-600" />
+                      <ChevronRightIcon className="h-4 w-4" />
                     )}
                   </button>
-                  
-                  {/* Timeline */}
-                  <div className="flex-1">
-                    <div className="h-2 bg-gray-200 rounded-full">
-                      <div
-                        className="h-full bg-[#584774] rounded-full transition-all duration-100"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Speed Controls */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Speed:</span>
-                    {[0.5, 1, 2].map((speed) => (
-                      <button
-                        key={speed}
-                        onClick={() => handleSpeedChange(speed)}
-                        className={`px-2 py-1 text-sm rounded ${
-                          playbackSpeed === speed
-                            ? 'bg-[#584774] text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        {speed}x
-                      </button>
-                    ))}
-                  </div>
+                  <h3 className="text-sm font-medium text-gray-500">Test Source</h3>
                 </div>
+                {currentTestName === 'apply save20 discount' ? (
+                  <button
+                    onClick={() => window.open(`https://github.com/codecovdesign/synthetic_testing_prototype/blob/main/tests/${getTestSlug(currentTestName)}.spec.ts`, '_blank')}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3a61] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    Commit to Repo
+                  </button>
+                ) : (
+                  <a
+                    href={`https://github.com/codecovdesign/synthetic_testing_prototype/blob/main/tests/${getTestSlug(currentTestName)}.spec.ts`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    View in Repo
+                  </a>
+                )}
               </div>
+              {isTestExpanded && (
+                <>
+                  <pre className="text-sm font-mono text-gray-800 overflow-x-auto">
+                    <code>
+                      {currentTestName.includes('save20') ? `// Save 20% test
+describe('Save 20% Banner', () => {
+  it('should display and apply discount', () => {
+    // Test implementation
+  });
+});` : `// Standard test
+describe('${currentTestName}', () => {
+  it('should execute successfully', () => {
+    // Test implementation
+  });
+});`}
+                    </code>
+                  </pre>
+                </>
+              )}
             </div>
-          </div>
-          
-          {/* Right Panel */}
-          <div className="w-[600px]">
-            <div className="bg-white rounded-lg shadow-sm h-full flex flex-col">
-              {/* Test Section */}
-              <div className="border-b border-gray-200">
-                <div className="px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => setIsTestExpanded(!isTestExpanded)}
-                      className="flex items-center space-x-2 text-sm font-medium text-gray-900 hover:text-gray-700"
-                    >
-                      {isTestExpanded ? (
-                        <ChevronDownIcon className="h-4 w-4" />
-                      ) : (
-                        <ChevronRightIcon className="h-4 w-4" />
-                      )}
-                      <span>Test</span>
-                    </button>
-                    {testName.includes('save20') ? (
-                      <button
-                        onClick={() => window.open(`https://github.com/codecovdesign/synthetic_testing_prototype/blob/main/tests/${getTestSlug(testName)}.spec.ts`, '_blank')}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3a61] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                      >
-                        <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                        Commit to Repo
-                      </button>
-                    ) : (
-                      <a
-                        href={`https://github.com/codecovdesign/synthetic_testing_prototype/blob/main/tests/${getTestSlug(testName)}.spec.ts`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-gray-600 hover:text-gray-900 flex items-center space-x-1"
-                      >
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                        </svg>
-                        <span>View in Repo</span>
-                      </a>
-                    )}
-                  </div>
-                  {isTestExpanded && (
-                    <div className="mt-3 bg-gray-50 rounded-md">
-                      <pre className="p-4 text-sm font-mono text-gray-800 overflow-x-auto">
-                        <code>{testSources[testName] || testSources['login test']}</code>
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Tabs */}
-              <div className="border-b border-gray-200 overflow-x-auto">
-                <div className="px-4 flex space-x-8 min-w-max">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab.toLowerCase())}
-                      className={`py-4 px-1 text-sm font-medium whitespace-nowrap ${
-                        activeTab === tab.toLowerCase()
-                          ? 'border-[#584774] text-[#584774] border-b-2'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Tab Content */}
-              <div className="flex-1 overflow-y-auto">
-                {renderTabContent()}
+            {/* Tabs */}
+            <div className="border-b border-gray-200 overflow-x-auto">
+              <div className="flex space-x-8 min-w-max">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab.toLowerCase())}
+                    className={`py-4 px-1 text-sm font-medium whitespace-nowrap ${
+                      activeTab === tab.toLowerCase()
+                        ? 'border-[#584774] text-[#584774] border-b-2'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
             </div>
+
+            {/* Tab Content */}
+            <div className="mt-4">
+              {renderTabContent()}
+            </div>
           </div>
-        </main>
+        </div>
       </div>
+
+      {/* Configuration Modal */}
+      <ConfigurationModal
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        environments={currentEnvironments}
+        onSave={(updatedEnvironments) => {
+          if (onEnvironmentConfigChange) {
+            onEnvironmentConfigChange(updatedEnvironments);
+          }
+          setShowConfigModal(false);
+        }}
+      />
     </div>
   );
-} 
+}
+
+export default BrowserTestDetail; 
