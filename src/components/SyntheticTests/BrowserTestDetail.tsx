@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
@@ -1097,11 +1097,20 @@ describe('${currentTestName}', () => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">Not testing</span>
+                        <span className="text-sm text-gray-400">Not configured</span>
                       )}
                     </div>
                   );
                 })}
+                {(test.name === 'Apply SAVE50' || test.name === 'Click adds product to cart' || test.name === 'Checkout validation') && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <Link to={`/issues/${test.id}`} className="text-sm text-blue-600 hover:text-blue-800">
+                      {test.name === 'Click adds product to cart' ? '3 related issues' :
+                       test.name === 'Apply SAVE50' ? '2 related issues' :
+                       test.name === 'Checkout validation' ? '2 related issues' : ''}
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
