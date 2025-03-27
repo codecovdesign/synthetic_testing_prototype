@@ -18,14 +18,25 @@ interface SyntheticTestsPanelProps {
   onTestComplete: (testName: string) => void;
 }
 
-const Modal = ({ isOpen, onClose, onSubmit }: { 
-  isOpen: boolean; 
+interface ModalProps {
+  isOpen: boolean;
   onClose: () => void;
-  onSubmit: (testName: string) => void;
-}) => {
+  onSubmit: (testName: string, environments: string[]) => void;
+}
+
+const Modal = ({ isOpen, onClose, onSubmit }: ModalProps) => {
   const [testName, setTestName] = useState('');
+  const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
 
   if (!isOpen) return null;
+
+  const handleEnvironmentToggle = (env: string) => {
+    setSelectedEnvironments(prev => 
+      prev.includes(env) 
+        ? prev.filter(e => e !== env)
+        : [...prev, env]
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
@@ -36,18 +47,38 @@ const Modal = ({ isOpen, onClose, onSubmit }: {
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
-        <div className="mb-6">
-          <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
-            Test Name
-          </label>
-          <input
-            type="text"
-            id="testName"
-            value={testName}
-            onChange={(e) => setTestName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-transparent"
-            placeholder="Enter test name"
-          />
+        <div className="mb-6 space-y-4">
+          <div>
+            <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
+              Test Name
+            </label>
+            <input
+              type="text"
+              id="testName"
+              value={testName}
+              onChange={(e) => setTestName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-transparent"
+              placeholder="Enter test name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Environments
+            </label>
+            <div className="space-y-2">
+              {['Staging', 'Production'].map((env) => (
+                <label key={env} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedEnvironments.includes(env)}
+                    onChange={() => handleEnvironmentToggle(env)}
+                    className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700">{env}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="flex justify-end space-x-3">
           <button
@@ -58,12 +89,13 @@ const Modal = ({ isOpen, onClose, onSubmit }: {
           </button>
           <button
             onClick={() => {
-              if (testName.trim()) {
-                onSubmit(testName);
+              if (testName.trim() && selectedEnvironments.length > 0) {
+                onSubmit(testName, selectedEnvironments);
                 setTestName('');
+                setSelectedEnvironments([]);
               }
             }}
-            disabled={!testName.trim()}
+            disabled={!testName.trim() || selectedEnvironments.length === 0}
             className="px-4 py-2 bg-[#584774] text-white rounded-md hover:bg-[#6C5B8E] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Record and Create
@@ -197,17 +229,26 @@ const SyntheticTestsPanel: React.FC<SyntheticTestsPanelProps> = ({ currentPage =
           },
           { name: 'Purchase Completion', status: 'success', isPlaying: false }
         ];
+      case 'products':
+        return [
+          { name: 'Product grid renders correctly', status: 'success', isPlaying: false },
+          { name: 'Click adds product to cart', status: 'success', isPlaying: false },
+          { name: 'Product image loads', status: 'success', isPlaying: false },
+          { name: 'Product price displays', status: 'success', isPlaying: false }
+        ];
+      case 'cart':
+        return [
+          { name: 'Remove item from cart', status: 'success', isPlaying: false },
+          { name: 'Update quantity', status: 'success', isPlaying: false },
+          { name: 'Apply discount', status: 'success', isPlaying: false },
+          { name: 'Calculate total', status: 'success', isPlaying: false }
+        ];
       case 'account':
         return [
-          { name: 'Update Profile', status: 'success', isPlaying: false },
-          { name: 'Delete Account', status: 'success', isPlaying: false },
-          { name: 'Change Password', status: 'error', isPlaying: false }
-        ];
-      case 'orders':
-        return [
-          { name: 'View Order History', status: 'success', isPlaying: false },
-          { name: 'Cancel Order', status: 'success', isPlaying: false },
-          { name: 'Download Invoice', status: 'error', isPlaying: false }
+          { name: 'Edit profile fields', status: 'success', isPlaying: false },
+          { name: 'Change password', status: 'success', isPlaying: false },
+          { name: 'Validate email input', status: 'success', isPlaying: false },
+          { name: 'Update subscription', status: 'success', isPlaying: false }
         ];
       default:
         return [];
@@ -223,8 +264,10 @@ const SyntheticTestsPanel: React.FC<SyntheticTestsPanelProps> = ({ currentPage =
   React.useEffect(() => {
     if (!isRecording) {
       const defaultTests = getTestsForPage(currentPage);
+      // Only keep custom tests that were recorded on the current page
       const customTests = testResults.filter(test => 
-        !defaultTests.some(defaultTest => defaultTest.name === test.name)
+        !defaultTests.some(defaultTest => defaultTest.name === test.name) &&
+        test.name.includes(currentPage)
       );
       setTestResults([...defaultTests, ...customTests]);
     }
@@ -240,12 +283,13 @@ const SyntheticTestsPanel: React.FC<SyntheticTestsPanelProps> = ({ currentPage =
   const handleStartRecording = (testName: string) => {
     setShowModal(false);
     setIsRecording(true);
-    setRecordingTestName(testName);
+    // Add the current page to the test name to track which page it belongs to
+    setRecordingTestName(`${testName} (${currentPage})`);
     
     // Add the new test with recording state
     setTestResults(prev => {
       const newTest: TestResult = {
-        name: testName,
+        name: `${testName} (${currentPage})`,
         status: 'success' as const,
         isPlaying: false
       };

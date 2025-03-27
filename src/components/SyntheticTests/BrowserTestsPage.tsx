@@ -1,240 +1,175 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon, ChevronDownIcon as ChevronDownIconSolid, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { Menu } from '@headlessui/react';
 import { subDays } from 'date-fns';
 import TestResultsChart from './TestResultsChart';
 import ConfigurationModal from './ConfigurationModal';
+import CreateTestModal from './CreateTestModal';
 
-interface BrowserTest {
+interface Test {
   id: string;
   name: string;
-  status: 'passed' | 'failed';
+  status: 'success' | 'error';
+  environments: {
+    name: string;
+    status: 'success' | 'error';
+  }[];
+  url: string;
   lastRun: string;
-  duration: string;
-  failureReason?: string;
+  nextRun: string;
   linkedPR: string;
   lastUpdated: string;
-  url?: string;
-  code?: string;
-  commitMessage?: string;
-  issue?: string;
 }
 
-export const mockTests: BrowserTest[] = [
+const EnvironmentStatusBadge = ({ environment }: { environment: { name: string; status: 'success' | 'error' } }) => (
+  <div className="flex items-center gap-2">
+    <div className={`w-2 h-2 rounded-full ${environment.status === 'success' ? 'bg-green-500' : 'bg-red-500'}`} />
+    <span className="text-sm text-gray-600">{environment.name}</span>
+  </div>
+);
+
+export const mockTests: Test[] = [
   {
     id: '1',
-    name: 'Fix Account Creation Flow',
-    status: 'passed',
-    lastRun: '2 min ago',
-    duration: '5s',
-    linkedPR: 'PR #456',
-    lastUpdated: 'Today',
-    url: 'https://app.example.com/signup',
-    code: `test('user can create account successfully', async ({ page }) => {
-  await page.goto('/signup');
-  await page.fill('#email', 'test@example.com');
-  await page.fill('#password', 'password123');
-  await page.fill('#confirmPassword', 'password123');
-  await page.click('button[type="submit"]');
-  await expect(page).toHaveURL('/dashboard');
-});`,
-    commitMessage: 'fix account creation flow [#456]'
+    name: 'Apply SAVE20',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'success' },
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/checkout',
+    lastRun: '2 minutes ago',
+    nextRun: 'in 58 minutes',
+    linkedPR: 'PR #1234',
+    lastUpdated: '2 hours ago'
   },
   {
     id: '2',
-    name: 'Checkout Flow',
-    status: 'failed',
-    lastRun: '5 min ago',
-    duration: '7s',
-    failureReason: '"Apply Discount" button missing',
-    linkedPR: 'PR #1234',
-    lastUpdated: 'Today',
-    url: 'https://app.example.com/checkout',
-    code: `test('user can complete checkout process', async ({ page }) => {
-  await page.goto('/cart');
-  await page.click('button:has-text("Proceed to Checkout")');
-  await page.fill('#shipping-address', '123 Main St');
-  await page.fill('#card-number', '4242424242424242');
-  await page.click('button:has-text("Apply Discount")');
-  await page.click('button:has-text("Place Order")');
-  await expect(page).toHaveURL('/order-confirmation');
-});`,
-    issue: 'APIException on checkout',
-    commitMessage: 'implement new checkout flow [#1234]'
+    name: 'Apply SAVE50',
+    status: 'error',
+    environments: [
+      { name: 'Staging', status: 'error' },
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/checkout',
+    lastRun: '5 minutes ago',
+    nextRun: 'in 55 minutes',
+    linkedPR: 'PR #1235',
+    lastUpdated: '1 day ago'
   },
   {
     id: '3',
-    name: 'Apply SAVE20 Discount',
-    status: 'passed',
-    lastRun: '5 min ago',
-    duration: '4s',
-    linkedPR: 'PR #1234',
-    lastUpdated: 'Today'
-  },
-  {
-    id: '4',
-    name: 'Apply SAVE50 Discount',
-    status: 'failed',
-    lastRun: '2 days ago',
-    duration: '6s',
-    failureReason: 'Server timeout',
-    linkedPR: 'PR #399',
-    lastUpdated: '2 days ago'
-  },
-  {
-    id: '5',
     name: 'Purchase Completion',
-    status: 'passed',
-    lastRun: '3 days ago',
-    duration: '3s',
-    linkedPR: 'PR #387',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'success' }
+    ],
+    url: '/checkout',
+    lastRun: '10 minutes ago',
+    nextRun: 'in 50 minutes',
+    linkedPR: 'PR #1236',
     lastUpdated: '3 days ago'
   },
   {
+    id: '4',
+    name: 'Product grid renders correctly',
+    status: 'success',
+    environments: [
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/products',
+    lastRun: '15 minutes ago',
+    nextRun: 'in 45 minutes',
+    linkedPR: 'PR #1237',
+    lastUpdated: '1 week ago'
+  },
+  {
+    id: '5',
+    name: 'Click adds product to cart',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'error' },
+      { name: 'Production', status: 'error' }
+    ],
+    url: '/products',
+    lastRun: '20 minutes ago',
+    nextRun: 'in 40 minutes',
+    linkedPR: 'PR #1238',
+    lastUpdated: '2 weeks ago'
+  },
+  {
     id: '6',
-    name: 'Login Flow',
-    status: 'passed',
-    lastRun: '5 min ago',
-    duration: '6s',
-    linkedPR: 'PR #470',
-    lastUpdated: 'Today'
+    name: 'User login flow',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'success' },
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/login',
+    lastRun: '25 minutes ago',
+    nextRun: 'in 35 minutes',
+    linkedPR: 'PR #1239',
+    lastUpdated: '1 month ago'
   },
   {
     id: '7',
-    name: 'User Profile Update',
-    status: 'failed',
-    lastRun: '15 min ago',
-    duration: '8s',
-    failureReason: 'Form validation error',
-    linkedPR: 'PR #471',
-    lastUpdated: 'Today'
+    name: 'Checkout validation',
+    status: 'error',
+    environments: [
+      { name: 'Staging', status: 'error' },
+      { name: 'Production', status: 'error' }
+    ],
+    url: '/checkout',
+    lastRun: '30 minutes ago',
+    nextRun: 'in 30 minutes',
+    linkedPR: 'PR #1240',
+    lastUpdated: '2 months ago'
   },
   {
     id: '8',
-    name: 'Logout Process',
-    status: 'passed',
-    lastRun: '20 min ago',
-    duration: '2s',
-    linkedPR: 'PR #472',
-    lastUpdated: 'Today'
+    name: 'Product search functionality',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'success' },
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/products',
+    lastRun: '35 minutes ago',
+    nextRun: 'in 25 minutes',
+    linkedPR: 'PR #1241',
+    lastUpdated: '3 months ago'
   },
   {
     id: '9',
-    name: 'Reset Password',
-    status: 'passed',
-    lastRun: '30 min ago',
-    duration: '4s',
-    linkedPR: 'PR #473',
-    lastUpdated: 'Today'
+    name: 'Cart persistence',
+    status: 'success',
+    environments: [
+      { name: 'Staging', status: 'success' }
+    ],
+    url: '/cart',
+    lastRun: '40 minutes ago',
+    nextRun: 'in 20 minutes',
+    linkedPR: 'PR #1242',
+    lastUpdated: '4 months ago'
   },
   {
     id: '10',
-    name: 'Change Email Address',
-    status: 'failed',
-    lastRun: '45 min ago',
-    duration: '6s',
-    failureReason: 'API timeout',
-    linkedPR: 'PR #474',
-    lastUpdated: 'Today'
-  },
-  {
-    id: '11',
-    name: '2FA Login Flow',
-    status: 'passed',
-    lastRun: '1 hour ago',
-    duration: '5s',
-    linkedPR: 'PR #475',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '12',
-    name: 'Add to Cart',
-    status: 'failed',
-    lastRun: '2 hours ago',
-    duration: '7s',
-    failureReason: 'UI button unresponsive',
-    linkedPR: 'PR #476',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '13',
-    name: 'Remove from Cart',
-    status: 'passed',
-    lastRun: '3 hours ago',
-    duration: '3s',
-    linkedPR: 'PR #477',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '14',
-    name: 'Apply Membership Discount',
-    status: 'passed',
-    lastRun: '4 hours ago',
-    duration: '4s',
-    linkedPR: 'PR #478',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '15',
-    name: 'Checkout with PayPal',
-    status: 'failed',
-    lastRun: '5 hours ago',
-    duration: '9s',
-    failureReason: 'Payment gateway error',
-    linkedPR: 'PR #479',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '16',
-    name: 'Guest Checkout',
-    status: 'passed',
-    lastRun: '6 hours ago',
-    duration: '6s',
-    linkedPR: 'PR #480',
-    lastUpdated: 'Yesterday'
-  },
-  {
-    id: '17',
-    name: 'Order Confirmation Email',
-    status: 'passed',
-    lastRun: '7 hours ago',
-    duration: '5s',
-    linkedPR: 'PR #481',
-    lastUpdated: '2 days ago'
-  },
-  {
-    id: '18',
-    name: 'Mobile Login Flow',
-    status: 'failed',
-    lastRun: '8 hours ago',
-    duration: '6s',
-    failureReason: 'CSS layout broken',
-    linkedPR: 'PR #482',
-    lastUpdated: '2 days ago'
-  },
-  {
-    id: '19',
-    name: 'Dark Mode Toggle',
-    status: 'passed',
-    lastRun: '9 hours ago',
-    duration: '2s',
-    linkedPR: 'PR #483',
-    lastUpdated: '2 days ago'
-  },
-  {
-    id: '20',
-    name: 'Save Address in Profile',
-    status: 'failed',
-    lastRun: '10 hours ago',
-    duration: '8s',
-    failureReason: 'Database write issue',
-    linkedPR: 'PR #484',
-    lastUpdated: '2 days ago'
+    name: 'Order confirmation email',
+    status: 'success',
+    environments: [
+      { name: 'Production', status: 'success' }
+    ],
+    url: '/checkout/confirmation',
+    lastRun: '45 minutes ago',
+    nextRun: 'in 15 minutes',
+    linkedPR: 'PR #1243',
+    lastUpdated: '5 months ago'
   }
 ];
 
 interface SortConfig {
-  key: keyof BrowserTest;
+  key: keyof Test;
   direction: 'asc' | 'desc';
 }
 
@@ -253,15 +188,18 @@ const mockDailyResults = Array.from({ length: 90 }, (_, i) => {
 const BrowserTestsPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'passed' | 'failed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'error'>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
   const [expandedTests, setExpandedTests] = useState<Set<string>>(new Set());
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSessionReplayModalOpen, setIsSessionReplayModalOpen] = useState(false);
+  const [isEnvironmentModalOpen, setIsEnvironmentModalOpen] = useState(false);
 
   // Calculate open issues count from failed tests
-  const openIssuesCount = mockTests.filter(test => test.status === 'failed').length;
+  const openIssuesCount = 8;
 
-  const handleSort = (key: keyof BrowserTest) => {
+  const handleSort = (key: keyof Test) => {
     setSortConfig(prev => ({
       key,
       direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
@@ -276,10 +214,27 @@ const BrowserTestsPage: React.FC = () => {
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
-        const aValue = String(a[sortConfig.key]);
-        const bValue = String(b[sortConfig.key]);
-        const direction = sortConfig.direction === 'asc' ? 1 : -1;
-        return aValue < bValue ? -direction : direction;
+        if (sortConfig.key === 'name') {
+          return sortConfig.direction === 'asc' 
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+        }
+        if (sortConfig.key === 'status') {
+          return sortConfig.direction === 'asc'
+            ? (a.status === 'success' ? 1 : -1)
+            : (a.status === 'success' ? -1 : 1);
+        }
+        if (sortConfig.key === 'lastRun') {
+          return sortConfig.direction === 'asc'
+            ? a.lastRun.localeCompare(b.lastRun)
+            : b.lastRun.localeCompare(a.lastRun);
+        }
+        if (sortConfig.key === 'nextRun') {
+          return sortConfig.direction === 'asc'
+            ? a.nextRun.localeCompare(b.nextRun)
+            : b.nextRun.localeCompare(a.nextRun);
+        }
+        return 0;
       });
   }, [searchTerm, statusFilter, sortConfig]);
 
@@ -298,6 +253,20 @@ const BrowserTestsPage: React.FC = () => {
       return newSet;
     });
   };
+
+  const handleCreateFromSessionReplay = () => {
+    navigate('/session-replay');
+  };
+
+  const handleCreateFromEnvironment = () => {
+    navigate('/browser-tests/create');
+  };
+
+  const statusOptions = [
+    { value: 'all', label: 'All Tests' },
+    { value: 'success', label: 'Passing' },
+    { value: 'error', label: 'Failing' }
+  ];
 
   return (
     <div className="p-6">
@@ -323,92 +292,126 @@ const BrowserTestsPage: React.FC = () => {
                     />
                   </div>
                   <select
-                    className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'passed' | 'failed')}
+                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'success' | 'error')}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#584774] focus:border-[#584774] sm:text-sm rounded-md"
                   >
-                    <option value="all">All Status</option>
-                    <option value="passed">Passed</option>
-                    <option value="failed">Failed</option>
+                    {statusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <button
-                  onClick={() => setIsConfigModalOpen(true)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                >
-                  Configuration
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setIsConfigModalOpen(true)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                  >
+                    Configuration
+                  </button>
+                  <Menu as="div" className="relative inline-block text-left">
+                    <Menu.Button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]">
+                      Create Test
+                      <ChevronDownIconSolid className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+                    </Menu.Button>
+                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                      <div className="py-1">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={handleCreateFromSessionReplay}
+                              className={`${
+                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                              } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                            >
+                              From Existing Session Replay
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={handleCreateFromEnvironment}
+                              className={`${
+                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                              } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                            >
+                              From Environment
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    </Menu.Items>
+                  </Menu>
+                </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      {['Test Name', 'Status', 'Last Run', 'Duration', 'Failure Reason', 'Linked PR', 'Last Updated'].map((header) => (
-                        <th
-                          key={header}
-                          onClick={() => handleSort(header.toLowerCase().replace(' ', '') as keyof BrowserTest)}
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <span>{header}</span>
-                            <div className="flex flex-col">
-                              <ChevronUpIcon className="h-3 w-3" />
-                              <ChevronDownIcon className="h-3 w-3" />
-                            </div>
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredAndSortedTests.map((test) => (
-                      <tr
-                        key={test.id}
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleTestClick(test.id, test.name)}
-                      >
-                        <td 
-                          className="px-6 py-4 whitespace-nowrap cursor-pointer"
-                        >
-                          <div className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                            {test.name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            test.status === 'passed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {test.status === 'passed' ? '✅ Passed' : '❌ Failed'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {test.lastRun}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {test.duration}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {test.failureReason || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <Link 
-                            to={test.linkedPR === 'PR #1234' ? '/' : '/browser-tests'} 
-                            className="text-blue-600 hover:text-blue-800"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
+              <div className="relative">
+                <div className="overflow-x-auto max-h-[calc(100vh-400px)]">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        {['Test Name', 'Status', 'Last Run', 'Linked PR', 'Last Updated'].map((header) => (
+                          <th
+                            key={header}
+                            onClick={() => handleSort(header.toLowerCase().replace(' ', '') as keyof Test)}
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                           >
-                            {test.linkedPR}
-                          </Link>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {test.lastUpdated}
-                        </td>
+                            <div className="flex items-center space-x-1">
+                              <span>{header}</span>
+                              <div className="flex flex-col">
+                                <ChevronUpIcon className="h-3 w-3" />
+                                <ChevronDownIcon className="h-3 w-3" />
+                              </div>
+                            </div>
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredAndSortedTests.map((test) => (
+                        <tr
+                          key={test.id}
+                          className="hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleTestClick(test.id, test.name)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">{test.name}</div>
+                            <div className="text-sm text-gray-500">{test.url}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              {test.environments.map((env, index) => (
+                                <React.Fragment key={env.name}>
+                                  <EnvironmentStatusBadge environment={env} />
+                                  {index < test.environments.length - 1 && <span className="text-gray-300">,</span>}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {test.lastRun}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <Link
+                              to={test.linkedPR === 'PR #1234' ? '/' : '/browser-tests'}
+                              className="text-blue-600 hover:text-blue-800"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              {test.linkedPR}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {test.lastUpdated}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -418,6 +421,10 @@ const BrowserTestsPage: React.FC = () => {
       <ConfigurationModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
+      />
+      <CreateTestModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
     </div>
   );

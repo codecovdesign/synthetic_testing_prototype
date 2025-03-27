@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlayIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, ArrowTopRightOnSquareIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 
@@ -128,9 +128,99 @@ const mockReplays: ReplayData[] = [
   }
 ];
 
+interface CreateTestModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (testName: string, environments: string[]) => void;
+}
+
+const CreateTestModal = ({ isOpen, onClose, onSubmit }: CreateTestModalProps) => {
+  const [testName, setTestName] = useState('');
+  const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
+
+  if (!isOpen) return null;
+
+  const handleEnvironmentToggle = (env: string) => {
+    setSelectedEnvironments(prev => 
+      prev.includes(env) 
+        ? prev.filter(e => e !== env)
+        : [...prev, env]
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-[400px] shadow-xl">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Create Test</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="mb-6 space-y-4">
+          <div>
+            <label htmlFor="testName" className="block text-sm font-medium text-gray-700 mb-2">
+              Test Name
+            </label>
+            <input
+              type="text"
+              id="testName"
+              value={testName}
+              onChange={(e) => setTestName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-transparent"
+              placeholder="Enter test name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Environments
+            </label>
+            <div className="space-y-2">
+              {['Staging', 'Production'].map((env) => (
+                <label key={env} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedEnvironments.includes(env)}
+                    onChange={() => handleEnvironmentToggle(env)}
+                    className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700">{env}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              if (testName.trim() && selectedEnvironments.length > 0) {
+                onSubmit(testName, selectedEnvironments);
+                setTestName('');
+                setSelectedEnvironments([]);
+              }
+            }}
+            disabled={!testName.trim() || selectedEnvironments.length === 0}
+            className="px-4 py-2 bg-[#584774] text-white rounded-md hover:bg-[#6C5B8E] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Create Test
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ReplayTestingAside = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'auto' | 'suggested'>('auto');
+  const [isCreateTestModalOpen, setIsCreateTestModalOpen] = useState(false);
+  const [selectedReplayId, setSelectedReplayId] = useState<string | null>(null);
 
   const autoCreatedReplays = mockReplays.filter(replay => replay.isAutoCreated);
   const suggestedReplays = mockReplays.filter(replay => !replay.isAutoCreated);
@@ -141,8 +231,14 @@ const ReplayTestingAside = () => {
 
   const handleCreateTest = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    // Handle test creation logic here
-    console.log('Create test for replay:', id);
+    setSelectedReplayId(id);
+    setIsCreateTestModalOpen(true);
+  };
+
+  const handleTestSubmit = (testName: string, environments: string[]) => {
+    console.log('Creating test:', { testName, environments, replayId: selectedReplayId });
+    setIsCreateTestModalOpen(false);
+    setSelectedReplayId(null);
   };
 
   const renderReplayItem = (replay: ReplayData) => (
@@ -214,6 +310,14 @@ const ReplayTestingAside = () => {
           suggestedReplays.map(renderReplayItem)
         )}
       </div>
+      <CreateTestModal
+        isOpen={isCreateTestModalOpen}
+        onClose={() => {
+          setIsCreateTestModalOpen(false);
+          setSelectedReplayId(null);
+        }}
+        onSubmit={handleTestSubmit}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import BrowserTestsPage from './components/SyntheticTests/BrowserTestsPage';
 import BrowserTestsLayout from './components/SyntheticTests/BrowserTestsLayout';
 import IssuesPage from './components/Issues/IssuesPage';
 import BrowserTestDetail from './components/SyntheticTests/BrowserTestDetail';
+import CreateTestPage from './components/SyntheticTests/CreateTestPage';
 
 const App = () => {
   return (
@@ -23,6 +24,11 @@ const App = () => {
               <BrowserTestsLayout>
                 <BrowserTestsPage />
               </BrowserTestsLayout>
+            </Layout>
+          } />
+          <Route path="/browser-tests/create" element={
+            <Layout>
+              <CreateTestPage />
             </Layout>
           } />
           <Route path="/browser-tests/:testId" element={

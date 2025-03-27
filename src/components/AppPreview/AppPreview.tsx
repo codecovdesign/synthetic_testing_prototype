@@ -46,16 +46,17 @@ interface AppPreviewProps {
   isPlaying?: boolean;
   onTestComplete?: () => void;
   onPageChange?: (page: string) => void;
+  currentPage?: string;
 }
 
-const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false, onTestComplete, onPageChange }) => {
+const AppPreview: React.FC<AppPreviewProps> = ({ currentTest, isPlaying = false, onTestComplete, onPageChange, currentPage: propCurrentPage }) => {
   const [promoCode, setPromoCode] = useState('');
   const [appliedCode, setAppliedCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [error, setError] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [currentTarget, setCurrentTarget] = useState<HTMLElement | null>(null);
-  const [currentPage, setCurrentPage] = useState<PageKey>('checkout');
+  const [currentPage, setCurrentPage] = useState<PageKey>(propCurrentPage as PageKey || 'checkout');
   const [showUrlDropdown, setShowUrlDropdown] = useState(false);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);

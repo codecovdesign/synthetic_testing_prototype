@@ -275,13 +275,22 @@ const ShippingForm = ({ className = '' }: { className?: string }) => (
 interface CreateTestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (testName: string) => void;
+  onSubmit: (testName: string, environments: string[]) => void;
 }
 
 const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [testName, setTestName] = useState('');
+  const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
 
   if (!isOpen) return null;
+
+  const handleEnvironmentToggle = (env: string) => {
+    setSelectedEnvironments(prev => 
+      prev.includes(env) 
+        ? prev.filter(e => e !== env)
+        : [...prev, env]
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -309,6 +318,24 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
               placeholder="Enter test name"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Environments
+            </label>
+            <div className="space-y-2">
+              {['Staging', 'Production'].map((env) => (
+                <label key={env} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedEnvironments.includes(env)}
+                    onChange={() => handleEnvironmentToggle(env)}
+                    className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700">{env}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
@@ -318,13 +345,15 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
             </button>
             <button
               onClick={() => {
-                if (testName.trim()) {
-                  onSubmit(testName);
+                if (testName.trim() && selectedEnvironments.length > 0) {
+                  onSubmit(testName, selectedEnvironments);
                   setTestName('');
+                  setSelectedEnvironments([]);
                   onClose();
                 }
               }}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63]"
+              disabled={!testName.trim() || selectedEnvironments.length === 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Create Test
             </button>
@@ -477,8 +506,8 @@ const SessionReplayDetail = () => {
     setPlaybackSpeed(speed);
   };
 
-  const handleCreateTest = (testName: string) => {
-    console.log('Creating test:', testName);
+  const handleCreateTest = (testName: string, environments: string[]) => {
+    console.log('Creating test:', testName, 'with environments:', environments);
     setTestCreated(true);
     setTestName(testName);
   };
