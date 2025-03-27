@@ -18,6 +18,7 @@ interface Test {
   url: string;
   nextRun: string;
   lastUpdated: string;
+  relatedIssues?: number;
 }
 
 const EnvironmentStatusBadge = ({ environment }: { environment: { name: string; status: 'success' | 'error' } }) => (
@@ -46,11 +47,12 @@ export const mockTests: Test[] = [
     status: 'error',
     environments: [
       { name: 'Staging', status: 'error' },
-      { name: 'Production', status: 'success' }
+      { name: 'Production', status: 'error' }
     ],
     url: '/checkout',
     nextRun: 'in 55 minutes',
-    lastUpdated: '1 day ago'
+    lastUpdated: '1 day ago',
+    relatedIssues: 2
   },
   {
     id: '3',
@@ -84,7 +86,8 @@ export const mockTests: Test[] = [
     ],
     url: '/products',
     nextRun: 'in 40 minutes',
-    lastUpdated: '2 weeks ago'
+    lastUpdated: '2 weeks ago',
+    relatedIssues: 3
   },
   {
     id: '6',
@@ -108,7 +111,8 @@ export const mockTests: Test[] = [
     ],
     url: '/checkout',
     nextRun: 'in 30 minutes',
-    lastUpdated: '2 months ago'
+    lastUpdated: '2 months ago',
+    relatedIssues: 2
   },
   {
     id: '8',
@@ -362,7 +366,7 @@ const BrowserTestsPage: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {test.status === 'error' ? (
-                              <Link to={`/issues/${test.id}`} className="text-blue-600 hover:text-blue-800">
+                              <Link to={`/browser-tests/${test.id}/issues`} className="text-blue-600 hover:text-blue-800">
                                 {test.name === 'Apply SAVE50' ? '2' : 
                                  test.name === 'Click adds product to cart' ? '3' :
                                  test.name === 'Checkout validation' ? '2' : '2'}
