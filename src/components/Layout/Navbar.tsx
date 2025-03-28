@@ -6,8 +6,8 @@ import { SentryLogo } from '../../components/Icons';
 const Navbar = () => {
   const location = useLocation();
   const isSessionReplay = location.pathname.startsWith('/session-replay');
-  const isBrowserTests = location.pathname.startsWith('/browser-tests') || location.pathname === '/';
-  const isIssues = location.pathname === '/issues';
+  const isBrowserTests = location.pathname.startsWith('/browser-tests') && !location.pathname.includes('/issues');
+  const isIssues = location.pathname === '/issues' || location.pathname.includes('/issues');
 
   return (
     <nav className="h-full flex flex-col items-center py-4 bg-[#584774]">
