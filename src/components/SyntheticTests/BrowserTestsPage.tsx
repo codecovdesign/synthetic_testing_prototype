@@ -16,10 +16,9 @@ interface Test {
     status: 'success' | 'error';
   }[];
   url: string;
-  lastRun: string;
   nextRun: string;
-  linkedPR: string;
   lastUpdated: string;
+  relatedIssues?: number;
 }
 
 const EnvironmentStatusBadge = ({ environment }: { environment: { name: string; status: 'success' | 'error' } }) => (
@@ -39,9 +38,7 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'success' }
     ],
     url: '/checkout',
-    lastRun: '2 minutes ago',
     nextRun: 'in 58 minutes',
-    linkedPR: 'PR #1234',
     lastUpdated: '2 hours ago'
   },
   {
@@ -50,13 +47,12 @@ export const mockTests: Test[] = [
     status: 'error',
     environments: [
       { name: 'Staging', status: 'error' },
-      { name: 'Production', status: 'success' }
+      { name: 'Production', status: 'error' }
     ],
     url: '/checkout',
-    lastRun: '5 minutes ago',
     nextRun: 'in 55 minutes',
-    linkedPR: 'PR #1235',
-    lastUpdated: '1 day ago'
+    lastUpdated: '1 day ago',
+    relatedIssues: 2
   },
   {
     id: '3',
@@ -66,9 +62,7 @@ export const mockTests: Test[] = [
       { name: 'Staging', status: 'success' }
     ],
     url: '/checkout',
-    lastRun: '10 minutes ago',
     nextRun: 'in 50 minutes',
-    linkedPR: 'PR #1236',
     lastUpdated: '3 days ago'
   },
   {
@@ -79,24 +73,21 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'success' }
     ],
     url: '/products',
-    lastRun: '15 minutes ago',
     nextRun: 'in 45 minutes',
-    linkedPR: 'PR #1237',
     lastUpdated: '1 week ago'
   },
   {
     id: '5',
     name: 'Click adds product to cart',
-    status: 'success',
+    status: 'error',
     environments: [
       { name: 'Staging', status: 'error' },
       { name: 'Production', status: 'error' }
     ],
     url: '/products',
-    lastRun: '20 minutes ago',
     nextRun: 'in 40 minutes',
-    linkedPR: 'PR #1238',
-    lastUpdated: '2 weeks ago'
+    lastUpdated: '2 weeks ago',
+    relatedIssues: 3
   },
   {
     id: '6',
@@ -107,9 +98,7 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'success' }
     ],
     url: '/login',
-    lastRun: '25 minutes ago',
     nextRun: 'in 35 minutes',
-    linkedPR: 'PR #1239',
     lastUpdated: '1 month ago'
   },
   {
@@ -121,10 +110,9 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'error' }
     ],
     url: '/checkout',
-    lastRun: '30 minutes ago',
     nextRun: 'in 30 minutes',
-    linkedPR: 'PR #1240',
-    lastUpdated: '2 months ago'
+    lastUpdated: '2 months ago',
+    relatedIssues: 2
   },
   {
     id: '8',
@@ -135,9 +123,7 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'success' }
     ],
     url: '/products',
-    lastRun: '35 minutes ago',
     nextRun: 'in 25 minutes',
-    linkedPR: 'PR #1241',
     lastUpdated: '3 months ago'
   },
   {
@@ -148,9 +134,7 @@ export const mockTests: Test[] = [
       { name: 'Staging', status: 'success' }
     ],
     url: '/cart',
-    lastRun: '40 minutes ago',
     nextRun: 'in 20 minutes',
-    linkedPR: 'PR #1242',
     lastUpdated: '4 months ago'
   },
   {
@@ -161,9 +145,7 @@ export const mockTests: Test[] = [
       { name: 'Production', status: 'success' }
     ],
     url: '/checkout/confirmation',
-    lastRun: '45 minutes ago',
     nextRun: 'in 15 minutes',
-    linkedPR: 'PR #1243',
     lastUpdated: '5 months ago'
   }
 ];
@@ -223,11 +205,6 @@ const BrowserTestsPage: React.FC = () => {
           return sortConfig.direction === 'asc'
             ? (a.status === 'success' ? 1 : -1)
             : (a.status === 'success' ? -1 : 1);
-        }
-        if (sortConfig.key === 'lastRun') {
-          return sortConfig.direction === 'asc'
-            ? a.lastRun.localeCompare(b.lastRun)
-            : b.lastRun.localeCompare(a.lastRun);
         }
         if (sortConfig.key === 'nextRun') {
           return sortConfig.direction === 'asc'
@@ -291,17 +268,12 @@ const BrowserTestsPage: React.FC = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value as 'all' | 'success' | 'error')}
-                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#584774] focus:border-[#584774] sm:text-sm rounded-md"
-                  >
-                    {statusOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="text-sm text-gray-600">
+                    Based on last run 4 minutes ago from{' '}
+                    <Link to="/retro-pr/1234" className="text-blue-600 hover:text-blue-800">
+                      retro-pr/1234
+                    </Link>
+                  </div>
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -352,7 +324,7 @@ const BrowserTestsPage: React.FC = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50 sticky top-0">
                       <tr>
-                        {['Test Name', 'Status', 'Last Run', 'Linked PR', 'Last Updated'].map((header) => (
+                        {['Test Name', 'Status', 'Environments', 'URL', 'Issues'].map((header) => (
                           <th
                             key={header}
                             onClick={() => handleSort(header.toLowerCase().replace(' ', '') as keyof Test)}
@@ -371,41 +343,37 @@ const BrowserTestsPage: React.FC = () => {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredAndSortedTests.map((test) => (
-                        <tr
-                          key={test.id}
-                          className="hover:bg-gray-50 cursor-pointer"
-                          onClick={() => handleTestClick(test.id, test.name)}
-                        >
+                        <tr key={test.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleTestClick(test.id, test.name)}>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{test.name}</div>
-                            <div className="text-sm text-gray-500">{test.url}</div>
+                            <span className="text-sm font-medium text-gray-900">{test.name}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              {test.environments.map((env, index) => (
-                                <React.Fragment key={env.name}>
-                                  <EnvironmentStatusBadge environment={env} />
-                                  {index < test.environments.length - 1 && <span className="text-gray-300">,</span>}
-                                </React.Fragment>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              test.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {test.status === 'success' ? 'Passing' : 'Failing'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {test.environments.map((env) => (
+                                <EnvironmentStatusBadge key={env.name} environment={env} />
                               ))}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {test.lastRun}
+                            {test.url}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <Link
-                              to={test.linkedPR === 'PR #1234' ? '/' : '/browser-tests'}
-                              className="text-blue-600 hover:text-blue-800"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                            >
-                              {test.linkedPR}
-                            </Link>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {test.lastUpdated}
+                            {test.status === 'error' ? (
+                              <Link to={`/browser-tests/${test.id}/issues`} className="text-blue-600 hover:text-blue-800">
+                                {test.name === 'Apply SAVE50' ? '2' : 
+                                 test.name === 'Click adds product to cart' ? '3' :
+                                 test.name === 'Checkout validation' ? '2' : '2'}
+                              </Link>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
                           </td>
                         </tr>
                       ))}

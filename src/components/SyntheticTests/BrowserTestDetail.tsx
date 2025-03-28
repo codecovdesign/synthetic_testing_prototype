@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
@@ -467,7 +467,19 @@ const BrowserTestDetail: React.FC<BrowserTestDetailProps> = ({
   stackTrace
 }) => {
   const { testId } = useParams();
-  const test = mockTests.find(t => t.id === testId);
+  const test = mockTests.find(t => t.id === testId) || {
+    id: '2',
+    name: 'Apply SAVE50',
+    status: 'error',
+    environments: [
+      { name: 'Staging', status: 'error' },
+      { name: 'Production', status: 'error' }
+    ],
+    url: '/checkout',
+    nextRun: 'in 55 minutes',
+    lastUpdated: '1 day ago',
+    relatedIssues: 2
+  };
   const navigate = useNavigate();
 
   // If no test is found, show a loading state or error
@@ -1019,15 +1031,19 @@ describe('${currentTestName}', () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-        <Breadcrumb
-          items={[
-            { label: 'Browser Tests', to: '/browser-tests' },
-            { label: currentTestName },
-          ]}
-        />
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <Link to="/browser-tests" className="hover:text-gray-700">
+              Browser Tests
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">{test?.name}</span>
+          </div>
+        </div>
+      </div>
 
       <div className="flex-1 flex">
         <div className="flex-1 flex flex-col">
@@ -1097,11 +1113,20 @@ describe('${currentTestName}', () => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">Not testing</span>
+                        <span className="text-sm text-gray-400">Not configured</span>
                       )}
                     </div>
                   );
                 })}
+                {(test.name === 'Apply SAVE50' || test.name === 'Click adds product to cart' || test.name === 'Checkout validation') && (
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <Link to={`/browser-tests/${test.id}/issues`} className="text-sm text-blue-600 hover:text-blue-800">
+                      {test.name === 'Click adds product to cart' ? '3 related issues' :
+                       test.name === 'Apply SAVE50' ? '2 related issues' :
+                       test.name === 'Checkout validation' ? '2 related issues' : ''}
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
