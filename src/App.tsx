@@ -12,6 +12,7 @@ import BrowserTestDetail from './components/SyntheticTests/BrowserTestDetail';
 import CreateTestPage from './components/SyntheticTests/CreateTestPage';
 import BrowserTestIssuesPage from './components/Issues/BrowserTestIssuesPage';
 import AssertionDetail from './components/SessionReplay/AssertionDetail';
+import AssertionIssuesPage from './components/Issues/AssertionIssuesPage';
 
 const App = () => {
   return (
@@ -25,6 +26,11 @@ const App = () => {
           <Route path="/session-replay" element={<SessionReplayView />} />
           <Route path="/session-replay/assertions" element={<SessionReplayView />} />
           <Route path="/assertion/:id" element={<AssertionDetail />} />
+          <Route path="/assertion-issues" element={
+            <Layout>
+              <AssertionIssuesPage />
+            </Layout>
+          } />
           <Route path="/browser-tests" element={
             <Layout>
               <BrowserTestsLayout>
