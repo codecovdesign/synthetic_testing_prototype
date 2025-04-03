@@ -81,6 +81,7 @@ const AssertionDetail = () => {
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [tos, setTos] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showFailingAssertion, setShowFailingAssertion] = useState(true);
 
   useEffect(() => {
     document.title = `Assertion - ${assertion?.flowName || 'Unknown Assertion'}`;
@@ -290,12 +291,40 @@ const AssertionDetail = () => {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Linked Issues</h3>
                   <p className="mt-1 text-sm text-gray-900">
-                    <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
-                      2 related issues
-                    </a>
+                    {id === '5' ? (
+                      'No issue detected'
+                    ) : (
+                      <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
+                        2 related issues
+                      </a>
+                    )}
                   </p>
                 </div>
               </div>
+
+              {/* Failing Assertion Section - Only for assertion/5 */}
+              {id === '5' && showFailingAssertion && (
+                <div className="mt-6 bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-sm font-medium text-gray-700">Failing Assertion</h3>
+                    <button 
+                      onClick={() => setShowFailingAssertion(false)}
+                      className="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    While there are no linked issues, this assertion is failing because the expected user action did not occur: input[name="username"] was never focused.
+                  </p>
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Update assertion details
+                  </button>
+                </div>
+              )}
 
               {/* Divider */}
               <div className="border-t border-gray-200 my-6"></div>
