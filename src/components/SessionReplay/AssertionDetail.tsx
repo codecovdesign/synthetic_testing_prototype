@@ -282,7 +282,11 @@ const AssertionDetail = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Linked Issues</h3>
-                  <p className="mt-1 text-sm text-gray-900">{assertion?.linkedIssues || '—'}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
+                      2 related issues
+                    </a>
+                  </p>
                 </div>
               </div>
             </div>
