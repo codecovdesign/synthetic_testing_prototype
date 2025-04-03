@@ -5,6 +5,7 @@ import Navbar from '../Layout/Navbar';
 import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
+import CreateAssertionModal from './CreateAssertionModal';
 
 interface TabProps {
   label: string;
@@ -377,7 +378,9 @@ const SessionReplayDetail = () => {
   const [testCreated, setTestCreated] = useState(replay?.hasTest || false);
   const [url, setUrl] = useState('turing-corp.com/accountcreation');
   const [showModal, setShowModal] = useState(false);
+  const [showAssertionModal, setShowAssertionModal] = useState(false);
   const [testName, setTestName] = useState('');
+  const [assertion, setAssertion] = useState<{ flowName: string; prompt: string; conditionType: string; conditionValue: string } | null>(null);
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -512,6 +515,10 @@ const SessionReplayDetail = () => {
     setTestName(testName);
   };
 
+  const handleCreateAssertion = (flowName: string, prompt: string, conditionType: string, conditionValue: string) => {
+    setAssertion({ flowName, prompt, conditionType, conditionValue });
+  };
+
   const renderTabContent = () => {
     const lowercaseActiveTab = activeTab.toLowerCase();
     switch (lowercaseActiveTab) {
@@ -624,34 +631,50 @@ const SessionReplayDetail = () => {
                 { label: replay?.name || 'Unknown Replay' },
               ]}
             />
-            {testCreated ? (
-              <div className="flex flex-col items-end">
+            <div className="flex items-center gap-3">
+              {assertion ? (
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${replay?.status === 'error' ? 'bg-red-500' : 'bg-green-500'}`} />
-                  <span className={`text-sm font-medium ${replay?.status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
-                    {replay?.status === 'error' ? 'Failing' : 'Passing'}
-                  </span>
-                  {testName && (
-                    <span className="text-gray-900">
-                      {testName}
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-sm font-medium text-green-600">Passed</span>
+                  <span className="text-gray-900">{assertion.flowName}</span>
+                </div>
+              ) : (
+                <button
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  onClick={() => setShowAssertionModal(true)}
+                >
+                  Create Assertion
+                </button>
+              )}
+              {testCreated ? (
+                <div className="flex flex-col items-end">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${replay?.status === 'error' ? 'bg-red-500' : 'bg-green-500'}`} />
+                    <span className={`text-sm font-medium ${replay?.status === 'error' ? 'text-red-600' : 'text-green-600'}`}>
+                      {replay?.status === 'error' ? 'Failing' : 'Passing'}
                     </span>
+                    {testName && (
+                      <span className="text-gray-900">
+                        {testName}
+                      </span>
+                    )}
+                  </div>
+                  {replay?.status === 'error' && (
+                    <div className="flex items-center gap-3 mt-1 text-sm">
+                      <a href="#" className="text-gray-600 hover:text-gray-900">View Issue</a>
+                      <button className="text-blue-600 hover:text-blue-800">Autofix</button>
+                    </div>
                   )}
                 </div>
-                {replay?.status === 'error' && (
-                  <div className="flex items-center gap-3 mt-1 text-sm">
-                    <a href="#" className="text-gray-600 hover:text-gray-900">View Issue</a>
-                    <button className="text-blue-600 hover:text-blue-800">Autofix</button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                onClick={() => setShowModal(true)}
-              >
-                Create as Test
-              </button>
-            )}
+              ) : (
+                <button
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  onClick={() => setShowModal(true)}
+                >
+                  Create as Test
+                </button>
+              )}
+            </div>
           </header>
           <div className="bg-gray-50 border-b border-gray-200 px-6 py-2 flex items-center">
             <div className="flex items-center flex-1 max-w-3xl mx-auto">
@@ -766,6 +789,11 @@ const SessionReplayDetail = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onSubmit={handleCreateTest}
+      />
+      <CreateAssertionModal
+        isOpen={showAssertionModal}
+        onClose={() => setShowAssertionModal(false)}
+        onSubmit={handleCreateAssertion}
       />
     </div>
   );

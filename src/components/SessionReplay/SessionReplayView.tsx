@@ -4,15 +4,18 @@ import Header from '../Layout/Header';
 import Navbar from '../Layout/Navbar';
 import SessionReplayPanel from './SessionReplayPanel';
 import SelectorsPanel from './SelectorsPanel';
+import AssertionsPanel from './AssertionsPanel';
 
 const SessionReplayView = () => {
   const [selectedRepos, setSelectedRepos] = useState(['enigma']);
   const [selectedEnvs, setSelectedEnvs] = useState(['all']);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'replays' | 'selectors'>('replays');
+  const [activeTab, setActiveTab] = useState<'replays' | 'selectors' | 'assertions'>('replays');
 
   useEffect(() => {
-    document.title = activeTab === 'selectors' ? 'Sentry - Selectors' : 'Sentry - Session Replays';
+    document.title = activeTab === 'selectors' ? 'Sentry - Selectors' : 
+                    activeTab === 'assertions' ? 'Sentry - Assertions' : 
+                    'Sentry - Session Replays';
   }, [activeTab]);
 
   const renderFilters = () => (
@@ -54,7 +57,9 @@ const SessionReplayView = () => {
       <div className="flex-1">
         <input
           type="text"
-          placeholder={activeTab === 'selectors' ? "Filter selectors..." : "Filter replays..."}
+          placeholder={activeTab === 'selectors' ? "Filter selectors..." : 
+                      activeTab === 'assertions' ? "Filter assertions..." :
+                      "Filter replays..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
@@ -93,12 +98,24 @@ const SessionReplayView = () => {
               >
                 Selectors
               </button>
+              <button
+                onClick={() => setActiveTab('assertions')}
+                className={`py-4 px-1 text-sm font-medium ${
+                  activeTab === 'assertions'
+                    ? 'border-[#584774] text-[#584774] border-b-2'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Assertions
+              </button>
             </nav>
           </div>
         </div>
         <main className="bg-gray-50 min-h-[calc(100vh-128px)] p-4">
           {renderFilters()}
-          {activeTab === 'replays' ? <SessionReplayPanel /> : <SelectorsPanel />}
+          {activeTab === 'replays' ? <SessionReplayPanel /> : 
+           activeTab === 'selectors' ? <SelectorsPanel /> : 
+           <AssertionsPanel />}
         </main>
       </div>
     </div>
