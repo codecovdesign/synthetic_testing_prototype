@@ -1,17 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
 interface CreateAssertionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (flowName: string, prompt: string, conditionType: string, conditionValue: string) => void;
+  initialData?: {
+    flowName: string;
+    prompt: string;
+    conditionType: string;
+    conditionValue: string;
+  };
 }
 
-const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [flowName, setFlowName] = useState('');
-  const [prompt, setPrompt] = useState('');
-  const [conditionType, setConditionType] = useState('ends-on-url');
-  const [conditionValue, setConditionValue] = useState('');
+const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
+  const [flowName, setFlowName] = useState(initialData?.flowName || '');
+  const [prompt, setPrompt] = useState(initialData?.prompt || '');
+  const [conditionType, setConditionType] = useState(initialData?.conditionType || 'ends-on-url');
+  const [conditionValue, setConditionValue] = useState(initialData?.conditionValue || '');
+
+  useEffect(() => {
+    if (initialData) {
+      setFlowName(initialData.flowName);
+      setPrompt(initialData.prompt);
+      setConditionType(initialData.conditionType);
+      setConditionValue(initialData.conditionValue);
+    }
+  }, [initialData]);
 
   if (!isOpen) return null;
 
@@ -48,7 +63,9 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">Create Assertion</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {initialData ? 'Edit Assertion' : 'Create Assertion'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500"
@@ -138,7 +155,7 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
               disabled={!flowName.trim()}
               className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save
+              {initialData ? 'Save Changes' : 'Save'}
             </button>
           </div>
         </form>

@@ -6,6 +6,7 @@ import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon } from '@heroicons/react
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
 import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import CreateAssertionModal from './CreateAssertionModal';
 
 interface TabProps {
   label: string;
@@ -79,6 +80,7 @@ const AssertionDetail = () => {
   const [password, setPassword] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [tos, setTos] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     document.title = `Assertion - ${assertion?.flowName || 'Unknown Assertion'}`;
@@ -252,6 +254,11 @@ const AssertionDetail = () => {
     setPlaybackSpeed(speed);
   };
 
+  const handleEditSubmit = (flowName: string, prompt: string, conditionType: string, conditionValue: string) => {
+    console.log('Edit submitted:', { flowName, prompt, conditionType, conditionValue });
+    setIsEditModalOpen(false);
+  };
+
   const renderTabContent = () => {
     const lowercaseActiveTab = activeTab.toLowerCase();
     switch (lowercaseActiveTab) {
@@ -287,6 +294,70 @@ const AssertionDetail = () => {
                       2 related issues
                     </a>
                   </p>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-200 my-6"></div>
+
+              {/* Assertion Details Section */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-500">Assertion Details</h3>
+                  <button 
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {id === '1' ? (
+                    <>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">No errors in replay</h4>
+                        <p className="mt-1 text-sm text-gray-900">—</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
+                        <p className="mt-1 text-sm text-gray-900">/dashboard</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
+                        <p className="mt-1 text-sm text-gray-900">Verify user can successfully log in and reach the dashboard</p>
+                      </div>
+                    </>
+                  ) : id === '2' ? (
+                    <>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
+                        <p className="mt-1 text-sm text-gray-900">/confirmation</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Contains user action (click)</h4>
+                        <p className="mt-1 text-sm text-gray-900">.btn-submit</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
+                        <p className="mt-1 text-sm text-gray-900">Verify checkout completes successfully with correct total and address form</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">No errors in replay</h4>
+                        <p className="mt-1 text-sm text-gray-900">—</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
+                        <p className="mt-1 text-sm text-gray-900">/home</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
+                        <p className="mt-1 text-sm text-gray-900">Verify user can navigate to the home page without errors</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -684,6 +755,31 @@ const AssertionDetail = () => {
           </div>
         </main>
       </div>
+
+      {/* Edit Modal */}
+      <CreateAssertionModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditSubmit}
+        initialData={{
+          flowName: assertion?.flowName || '',
+          prompt: id === '1' 
+            ? 'Verify user can successfully log in and reach the dashboard'
+            : id === '2'
+            ? 'Verify checkout completes successfully with correct total and address form'
+            : 'Verify user can navigate to the home page without errors',
+          conditionType: id === '1' 
+            ? 'no-errors'
+            : id === '2'
+            ? 'ends-on-url'
+            : 'no-errors',
+          conditionValue: id === '1'
+            ? ''
+            : id === '2'
+            ? '/confirmation'
+            : ''
+        }}
+      />
     </div>
   );
 };
