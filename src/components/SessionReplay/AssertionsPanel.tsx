@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface AssertionData {
   id: string;
@@ -24,6 +25,8 @@ const mockAssertions: AssertionData[] = [
 ];
 
 const AssertionsPanel = () => {
+  const navigate = useNavigate();
+
   const getStatusDisplay = (status: AssertionData['status']) => {
     switch (status) {
       case 'passed':
@@ -35,6 +38,10 @@ const AssertionsPanel = () => {
       default:
         return status;
     }
+  };
+
+  const handleRowClick = (assertion: AssertionData) => {
+    navigate(`/assertion/${assertion.id}`, { state: { assertion } });
   };
 
   return (
@@ -68,7 +75,11 @@ const AssertionsPanel = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {mockAssertions.map((assertion) => (
-              <tr key={assertion.id} className="hover:bg-gray-50">
+              <tr 
+                key={assertion.id} 
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleRowClick(assertion)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.flowName}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getStatusDisplay(assertion.status)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.lastSeen}</td>
@@ -76,7 +87,15 @@ const AssertionsPanel = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.failures || '—'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.linkedIssues || '—'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <button className="text-blue-600 hover:text-blue-800">View Replay</button>
+                  <button 
+                    className="text-blue-600 hover:text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle view replay action
+                    }}
+                  >
+                    View Replay
+                  </button>
                 </td>
               </tr>
             ))}

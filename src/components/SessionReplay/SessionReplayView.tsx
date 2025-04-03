@@ -11,6 +11,18 @@ const SessionReplayView = () => {
   const [selectedEnvs, setSelectedEnvs] = useState(['all']);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'replays' | 'selectors' | 'assertions'>('replays');
+  const location = useLocation();
+
+  useEffect(() => {
+    // Set the active tab based on the URL path
+    if (location.pathname === '/session-replay/assertions') {
+      setActiveTab('assertions');
+    } else if (location.pathname === '/session-replay/selectors') {
+      setActiveTab('selectors');
+    } else {
+      setActiveTab('replays');
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     document.title = activeTab === 'selectors' ? 'Sentry - Selectors' : 
@@ -57,9 +69,7 @@ const SessionReplayView = () => {
       <div className="flex-1">
         <input
           type="text"
-          placeholder={activeTab === 'selectors' ? "Filter selectors..." : 
-                      activeTab === 'assertions' ? "Filter assertions..." :
-                      "Filter replays..."}
+          placeholder={activeTab === 'selectors' ? "Filter selectors..." : activeTab === 'assertions' ? "Filter assertions..." : "Filter replays..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
@@ -113,9 +123,7 @@ const SessionReplayView = () => {
         </div>
         <main className="bg-gray-50 min-h-[calc(100vh-128px)] p-4">
           {renderFilters()}
-          {activeTab === 'replays' ? <SessionReplayPanel /> : 
-           activeTab === 'selectors' ? <SelectorsPanel /> : 
-           <AssertionsPanel />}
+          {activeTab === 'replays' ? <SessionReplayPanel /> : activeTab === 'selectors' ? <SelectorsPanel /> : <AssertionsPanel />}
         </main>
       </div>
     </div>

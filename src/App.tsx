@@ -11,6 +11,7 @@ import IssuesPage from './components/Issues/IssuesPage';
 import BrowserTestDetail from './components/SyntheticTests/BrowserTestDetail';
 import CreateTestPage from './components/SyntheticTests/CreateTestPage';
 import BrowserTestIssuesPage from './components/Issues/BrowserTestIssuesPage';
+import AssertionDetail from './components/SessionReplay/AssertionDetail';
 
 const App = () => {
   return (
@@ -22,6 +23,8 @@ const App = () => {
           <Route path="/retro-pr/:id" element={<RetroTestingPullRequestView />} />
           <Route path="/session-replay/:id" element={<SessionReplayDetail />} />
           <Route path="/session-replay" element={<SessionReplayView />} />
+          <Route path="/session-replay/assertions" element={<SessionReplayView />} />
+          <Route path="/assertion/:id" element={<AssertionDetail />} />
           <Route path="/browser-tests" element={
             <Layout>
               <BrowserTestsLayout>
