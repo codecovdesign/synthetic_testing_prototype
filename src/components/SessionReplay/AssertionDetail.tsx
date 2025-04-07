@@ -257,8 +257,25 @@ const AssertionDetail = () => {
     setPlaybackSpeed(speed);
   };
 
-  const handleEditSubmit = (flowName: string, prompt: string, conditionType: string, conditionValue: string) => {
-    console.log('Edit submitted:', { flowName, prompt, conditionType, conditionValue });
+  const handleEditSubmit = (
+    flowName: string, 
+    prompt: string, 
+    conditionType: string, 
+    conditionValue: string,
+    startingAction: string,
+    validOutcomes: string[],
+    genericAssertions: string[]
+  ) => {
+    // Update the assertion with the new values
+    if (assertion) {
+      assertion.flowName = flowName;
+      assertion.prompt = prompt;
+      assertion.conditionType = conditionType;
+      assertion.conditionValue = conditionValue;
+      assertion.startingAction = startingAction;
+      assertion.validOutcomes = validOutcomes;
+      assertion.genericAssertions = genericAssertions;
+    }
     setIsEditModalOpen(false);
   };
 
@@ -961,7 +978,18 @@ const AssertionDetail = () => {
             ? ''
             : id === '2'
             ? '/confirmation'
-            : ''
+            : '',
+          startingAction: id === '1'
+            ? 'login_click'
+            : id === '2'
+            ? 'checkout_load'
+            : 'signup_click',
+          validOutcomes: id === '1'
+            ? ['/dashboard']
+            : id === '2'
+            ? ['/confirmation']
+            : ['/home'],
+          genericAssertions: ['no_console_errors', 'no_network_errors']
         }}
       />
     </div>
