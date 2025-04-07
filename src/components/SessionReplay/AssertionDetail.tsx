@@ -389,51 +389,68 @@ const AssertionDetail = () => {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {id === '1' ? (
-                    <>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">No errors in replay</h4>
-                        <p className="mt-1 text-sm text-gray-900">—</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
-                        <p className="mt-1 text-sm text-gray-900">/dashboard</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
-                        <p className="mt-1 text-sm text-gray-900">Verify user can successfully log in and reach the dashboard</p>
-                      </div>
-                    </>
-                  ) : id === '2' ? (
-                    <>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
-                        <p className="mt-1 text-sm text-gray-900">/confirmation</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Contains user action (click)</h4>
-                        <p className="mt-1 text-sm text-gray-900">.btn-submit</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
-                        <p className="mt-1 text-sm text-gray-900">Verify checkout completes successfully with correct total and address form</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">No errors in replay</h4>
-                        <p className="mt-1 text-sm text-gray-900">—</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Ends on URL</h4>
-                        <p className="mt-1 text-sm text-gray-900">/home</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700">Prompt</h4>
-                        <p className="mt-1 text-sm text-gray-900">Verify user can navigate to the home page without errors</p>
-                      </div>
-                    </>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <p className="mt-1 text-sm text-gray-900">{assertion?.prompt || 'No description provided'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Starting Action</label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {id === '1' 
+                        ? 'User clicks Login'
+                        : id === '2'
+                        ? 'Page loads /checkout'
+                        : 'User clicks Sign Up'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Valid Outcomes</label>
+                    <div className="mt-1 space-y-1">
+                      {id === '1' 
+                        ? ['/dashboard'].map((outcome) => (
+                            <div key={outcome} className="text-sm text-gray-900">
+                              {outcome}
+                            </div>
+                          ))
+                        : id === '2'
+                        ? ['/confirmation'].map((outcome) => (
+                            <div key={outcome} className="text-sm text-gray-900">
+                              {outcome}
+                            </div>
+                          ))
+                        : ['/home'].map((outcome) => (
+                            <div key={outcome} className="text-sm text-gray-900">
+                              {outcome}
+                            </div>
+                          ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Generic Assertions</label>
+                    <div className="mt-1 space-y-1">
+                      {['No console errors', 'No network errors'].map((assertion) => (
+                        <div key={assertion} className="flex items-center text-sm text-gray-900">
+                          <span className="mr-2">✓</span>
+                          {assertion}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Condition Type</label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {id === '1' 
+                        ? 'No errors in replay'
+                        : id === '2'
+                        ? 'Ends on URL'
+                        : 'No errors in replay'}
+                    </p>
+                  </div>
+                  {id === '2' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Condition Value</label>
+                      <p className="mt-1 text-sm text-gray-900">/confirmation</p>
+                    </div>
                   )}
                 </div>
               </div>
