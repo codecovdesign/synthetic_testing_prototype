@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon, ChevronDownIcon as ChevronDownIconSolid, VideoCameraIcon } from '@heroicons/react/24/outline';
 import { Menu } from '@headlessui/react';
 import { subDays } from 'date-fns';
@@ -179,6 +179,9 @@ const BrowserTestsPage: React.FC<BrowserTestsPageProps> = ({
   headerText = 'Browser Tests'
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMainPage = location.pathname === '/browser-tests';
+  const shouldShowHeader = !hideHeader && isMainPage;
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'error'>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
@@ -256,7 +259,7 @@ const BrowserTestsPage: React.FC<BrowserTestsPageProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-full">
       <main className="bg-gray-50 min-h-[calc(100vh-128px)] p-4">
         <div className="flex-1 overflow-auto">
           <div className="bg-white rounded-lg shadow">

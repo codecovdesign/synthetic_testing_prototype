@@ -684,9 +684,9 @@ const AssertionDetail = () => {
           <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
             <Breadcrumb
               items={[
-                { label: 'Session Replay', to: '/session-replay' },
-                { label: 'Flows', to: '/session-replay/assertions' },
-                { label: assertion?.flowName || 'Unknown Assertion' },
+                { label: 'Prevent', to: '/prevent' },
+                { label: 'Flows', to: '/prevent', state: { activeTab: 'flows', fromSuggestedFlow: true } },
+                { label: assertion?.flowName || 'Unknown Assertion' }
               ]}
             />
             <div className="flex items-center gap-3">
