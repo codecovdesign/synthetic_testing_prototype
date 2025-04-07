@@ -332,12 +332,12 @@ const AssertionDetail = () => {
               {/* Assertion Details Section */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Assertion Details</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Flow Details</h3>
                   <button 
                     onClick={() => setIsEditModalOpen(true)}
                     className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
                   >
-                    Edit
+                    Edit Flow
                   </button>
                 </div>
                 <div className="space-y-3">
@@ -478,7 +478,7 @@ const AssertionDetail = () => {
             <Breadcrumb
               items={[
                 { label: 'Session Replay', to: '/session-replay' },
-                { label: 'Assertions', to: '/session-replay/assertions' },
+                { label: 'Flows', to: '/session-replay/assertions' },
                 { label: assertion?.flowName || 'Unknown Assertion' },
               ]}
             />

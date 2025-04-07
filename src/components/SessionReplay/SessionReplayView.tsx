@@ -26,7 +26,7 @@ const SessionReplayView = () => {
 
   useEffect(() => {
     document.title = activeTab === 'selectors' ? 'Sentry - Selectors' : 
-                    activeTab === 'assertions' ? 'Sentry - Assertions' : 
+                    activeTab === 'assertions' ? 'Sentry - Flows' : 
                     'Sentry - Session Replays';
   }, [activeTab]);
 
@@ -69,7 +69,7 @@ const SessionReplayView = () => {
       <div className="flex-1">
         <input
           type="text"
-          placeholder={activeTab === 'selectors' ? "Filter selectors..." : activeTab === 'assertions' ? "Filter assertions..." : "Filter replays..."}
+          placeholder={activeTab === 'selectors' ? "Filter selectors..." : activeTab === 'assertions' ? "Filter flows..." : "Filter replays..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="block w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
@@ -116,7 +116,7 @@ const SessionReplayView = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Assertions
+                Flows
               </button>
             </nav>
           </div>
