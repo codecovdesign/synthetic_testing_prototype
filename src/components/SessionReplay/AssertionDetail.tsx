@@ -389,6 +389,91 @@ const AssertionDetail = () => {
                   )}
                 </div>
               </div>
+
+              {/* Failure Details Section - Only shown when status is failing */}
+              {assertion?.status === 'failed' && (
+                <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                  <h3 className="text-sm font-medium text-gray-500 mb-4">Why this flow failed</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-700">Failure Type:</div>
+                      <div className="text-sm text-gray-600 mt-1">Redirected to unexpected page (/settings)</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700">Expected Outcome(s):</div>
+                      <div className="text-sm text-gray-600 mt-1">/dashboard or /home</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700">Actual Outcome:</div>
+                      <div className="text-sm text-gray-600 mt-1">/settings</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700">Deviation Analysis (last 10 replays):</div>
+                      <div className="mt-3 space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#351</span>
+                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#352</span>
+                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#353</span>
+                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#354</span>
+                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#355</span>
+                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#356</span>
+                          <span className="text-sm text-gray-600">timed out (no next step)</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#357</span>
+                          <span className="text-sm text-gray-600">timed out (no next step)</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#358</span>
+                          <span className="text-sm text-gray-600">hit an error page (/error-500)</span>
+                          <span className="text-sm text-red-500">❌</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#359</span>
+                          <span className="text-sm text-gray-600">successfully reached /dashboard</span>
+                          <span className="text-sm text-green-500">✅</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#360</span>
+                          <span className="text-sm text-gray-600">successfully reached /dashboard</span>
+                          <span className="text-sm text-green-500">✅</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700">Replays Affected:</div>
+                      <div className="text-sm text-gray-600 mt-1">8 failed, 2 passed</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
