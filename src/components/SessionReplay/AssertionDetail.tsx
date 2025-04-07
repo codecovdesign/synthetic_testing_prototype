@@ -66,6 +66,8 @@ const AssertionDetail = () => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);
   const [url, setUrl] = useState('turing-corp.com/accountcreation');
+  const [currentReplayId, setCurrentReplayId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -260,6 +262,35 @@ const AssertionDetail = () => {
     setIsEditModalOpen(false);
   };
 
+  const handleReplayClick = (replayId: string) => {
+    setIsLoading(true);
+    setCurrentReplayId(replayId);
+    
+    // Reset animation state
+    setProgress(0);
+    startTimeRef.current = undefined;
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    // Reset form state
+    resetForm();
+    
+    // Show loading state for 1.5s
+    setTimeout(() => {
+      setIsLoading(false);
+      // Start animation if playing
+      if (isPlaying) {
+        const startTime = performance.now();
+        startTimeRef.current = startTime;
+        const animate = (timestamp: number) => {
+          animateSignup(timestamp);
+          animationRef.current = requestAnimationFrame(animate);
+        };
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    }, 1500);
+  };
+
   const renderTabContent = () => {
     const lowercaseActiveTab = activeTab.toLowerCase();
     switch (lowercaseActiveTab) {
@@ -415,52 +446,102 @@ const AssertionDetail = () => {
                       <div className="text-sm font-medium text-gray-700">Deviation Analysis (last 10 replays):</div>
                       <div className="mt-3 space-y-2">
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#351</span>
+                          <span 
+                            onClick={() => handleReplayClick('#351')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #351
+                          </span>
                           <span className="text-sm text-gray-600">redirected to /settings</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#352</span>
+                          <span 
+                            onClick={() => handleReplayClick('#352')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #352
+                          </span>
                           <span className="text-sm text-gray-600">redirected to /settings</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#353</span>
+                          <span 
+                            onClick={() => handleReplayClick('#353')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #353
+                          </span>
                           <span className="text-sm text-gray-600">redirected to /settings</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#354</span>
+                          <span 
+                            onClick={() => handleReplayClick('#354')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #354
+                          </span>
                           <span className="text-sm text-gray-600">redirected to /settings</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#355</span>
+                          <span 
+                            onClick={() => handleReplayClick('#355')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #355
+                          </span>
                           <span className="text-sm text-gray-600">redirected to /settings</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#356</span>
+                          <span 
+                            onClick={() => handleReplayClick('#356')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #356
+                          </span>
                           <span className="text-sm text-gray-600">timed out (no next step)</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#357</span>
+                          <span 
+                            onClick={() => handleReplayClick('#357')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #357
+                          </span>
                           <span className="text-sm text-gray-600">timed out (no next step)</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#358</span>
+                          <span 
+                            onClick={() => handleReplayClick('#358')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #358
+                          </span>
                           <span className="text-sm text-gray-600">hit an error page (/error-500)</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#359</span>
+                          <span 
+                            onClick={() => handleReplayClick('#359')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #359
+                          </span>
                           <span className="text-sm text-gray-600">successfully reached /dashboard</span>
                           <span className="text-sm text-green-500">✅</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">#360</span>
+                          <span 
+                            onClick={() => handleReplayClick('#360')}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            #360
+                          </span>
                           <span className="text-sm text-gray-600">successfully reached /dashboard</span>
                           <span className="text-sm text-green-500">✅</span>
                         </div>
@@ -586,6 +667,11 @@ const AssertionDetail = () => {
                 onChange={(e) => setUrl(e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
               />
+              {currentReplayId && (
+                <span className="ml-3 text-sm font-medium text-gray-500">
+                  Replay {currentReplayId}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -595,7 +681,15 @@ const AssertionDetail = () => {
             <div className="bg-white rounded-lg shadow-sm h-full flex flex-col">
               {/* Preview Area */}
               <div className="flex-1 p-6 relative" ref={previewRef}>
-                <div className="w-full bg-[#fafafa] rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className={`w-full bg-[#fafafa] rounded-lg shadow-sm border border-gray-200 overflow-hidden relative ${isLoading ? 'pointer-events-none' : ''}`}>
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-50">
+                      <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 border-4 border-[#584774] border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <span className="text-sm text-gray-600">Loading replay...</span>
+                      </div>
+                    </div>
+                  )}
                   {/* Mock Pinterest Header - Full Width */}
                   <div className="w-full bg-white border-b border-gray-200 rounded-t-lg sticky top-0 z-10 shadow-sm">
                     <div className="max-w-[1280px] mx-auto">
@@ -686,43 +780,21 @@ const AssertionDetail = () => {
                                     {error}
                                   </div>
                                 )}
-                                {appliedCode && (
-                                  <p className="text-green-600 text-sm mt-2">
-                                    Promo code {appliedCode} applied successfully! (20% discount)
-                                  </p>
-                                )}
                               </div>
-                              <button 
+                              <button
                                 id="apply-promo"
                                 onClick={handleApplyPromoCode}
-                                className="px-6 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700 transition-colors font-medium shadow-sm"
+                                className="px-4 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                               >
                                 Apply
                               </button>
                             </div>
                           </div>
-
-                          {/* Purchase Button */}
-                          <button 
-                            className="w-full px-6 py-3 bg-red-600 text-white rounded-3xl hover:bg-red-700 transition-colors font-medium text-lg shadow-sm"
-                          >
-                            Complete Purchase
-                          </button>
                         </div>
                       ) : (
                         <div className="space-y-6 bg-white rounded-lg p-6 shadow-sm">
-                          {/* Header */}
-                          <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
-                                <span className="text-white font-bold text-lg">A</span>
-                              </div>
-                              <h1 className="text-2xl font-bold text-gray-900">Acme App</h1>
-                            </div>
-                            <div className="text-sm text-gray-500">Create Account</div>
-                          </div>
-
-                          <form className="space-y-6">
+                          <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+                          <form className="space-y-4">
                             <div>
                               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 Email
@@ -732,8 +804,7 @@ const AssertionDetail = () => {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-base bg-white"
-                                placeholder="Enter your email"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
                               />
                             </div>
                             <div>
@@ -745,8 +816,7 @@ const AssertionDetail = () => {
                                 id="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 block w-full rounded-3xl border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-base bg-white"
-                                placeholder="Enter your password"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
                               />
                             </div>
                             <div className="flex items-center">
@@ -755,7 +825,7 @@ const AssertionDetail = () => {
                                 id="marketingConsent"
                                 checked={marketingConsent}
                                 onChange={(e) => setMarketingConsent(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="h-4 w-4 rounded border-gray-300 text-[#584774] focus:ring-[#584774]"
                               />
                               <label htmlFor="marketingConsent" className="ml-2 block text-sm text-gray-700">
                                 I want to receive marketing emails
@@ -767,7 +837,7 @@ const AssertionDetail = () => {
                                 id="tos"
                                 checked={tos}
                                 onChange={(e) => setTos(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="h-4 w-4 rounded border-gray-300 text-[#584774] focus:ring-[#584774]"
                               />
                               <label htmlFor="tos" className="ml-2 block text-sm text-gray-700">
                                 I agree to the Terms of Service
@@ -775,7 +845,7 @@ const AssertionDetail = () => {
                             </div>
                             <button
                               type="submit"
-                              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-3xl shadow-sm text-base font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#584774] hover:bg-[#4a3d63] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
                             >
                               Create Account
                             </button>
