@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { Menu } from '@headlessui/react';
 
 interface Flow {
   name: string;
   description: string;
   startingAction: string;
-  validOutcomes: string[];
+  assertions: Assertion[];
   genericAssertions: string[];
+}
+
+interface Assertion {
+  type: 'page' | 'locator';
+  selector?: string;
+  assertion: string;
 }
 
 interface CreateFlowModalProps {
@@ -19,16 +26,30 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startingAction, setStartingAction] = useState('');
-  const [validOutcomes, setValidOutcomes] = useState<string[]>([]);
-  const [newOutcome, setNewOutcome] = useState('');
+  const [assertions, setAssertions] = useState<Assertion[]>([]);
   const [genericAssertions, setGenericAssertions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAssertionDropdown, setShowAssertionDropdown] = useState(false);
+  const [assertionType, setAssertionType] = useState<'page' | 'locator' | null>(null);
+  const [locatorSelector, setLocatorSelector] = useState('');
 
   const availableStartingActions = [
     { id: 'login_click', label: 'User clicks Login' },
     { id: 'checkout_load', label: 'Page loads /checkout' },
     { id: 'signup_click', label: 'User clicks Sign Up' },
     { id: 'cart_click', label: 'User clicks Cart' },
+  ];
+
+  const pageAssertions = [
+    { id: 'toHaveUrl', label: 'toHaveUrl', example: "expect(page).toHaveUrl('/dashboard')" },
+    { id: 'toContainText', label: 'toContainText', example: "expect(page).toContainText('Success')" },
+    { id: 'toHaveTitle', label: 'toHaveTitle', example: "expect(page).toHaveTitle('Welcome')" },
+  ];
+
+  const locatorAssertions = [
+    { id: 'toBeVisible', label: 'toBeVisible', example: "expect(locator('#submit')).toBeVisible()" },
+    { id: 'toHaveText', label: 'toHaveText', example: "expect(locator('#submit')).toHaveText('Submit')" },
+    { id: 'toBeEnabled', label: 'toBeEnabled', example: "expect(locator('#submit')).toBeEnabled()" },
   ];
 
   const availableGenericAssertions = [
@@ -39,15 +60,15 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
     { id: 'no_500s', label: 'No 500 errors' },
   ];
 
-  const handleAddOutcome = () => {
-    if (newOutcome.trim() && !validOutcomes.includes(newOutcome.trim())) {
-      setValidOutcomes([...validOutcomes, newOutcome.trim()]);
-      setNewOutcome('');
-    }
+  const handleAddAssertion = (type: 'page' | 'locator', assertion: string, selector?: string) => {
+    setAssertions([...assertions, { type, assertion, selector }]);
+    setAssertionType(null);
+    setLocatorSelector('');
+    setShowAssertionDropdown(false);
   };
 
-  const handleRemoveOutcome = (outcome: string) => {
-    setValidOutcomes(validOutcomes.filter(o => o !== outcome));
+  const handleRemoveAssertion = (index: number) => {
+    setAssertions(assertions.filter((_, i) => i !== index));
   };
 
   const handleToggleGenericAssertion = (assertionId: string) => {
@@ -67,7 +88,7 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
         name,
         description,
         startingAction,
-        validOutcomes,
+        assertions,
         genericAssertions,
       });
       onClose();
@@ -104,7 +125,7 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
               required
             />
           </div>
@@ -117,8 +138,8 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
             />
           </div>
 
@@ -130,7 +151,7 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
               id="startingAction"
               value={startingAction}
               onChange={(e) => setStartingAction(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
               required
             >
               <option value="">Select a starting action</option>
@@ -143,41 +164,97 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Valid Outcomes
-            </label>
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={newOutcome}
-                onChange={(e) => setNewOutcome(e.target.value)}
-                placeholder="Add a valid outcome (e.g. /dashboard)"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#584774] focus:border-[#584774]"
-              />
-              <button
-                type="button"
-                onClick={handleAddOutcome}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-              >
-                Add
-              </button>
-            </div>
-            {validOutcomes.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {validOutcomes.map((outcome) => (
-                  <div key={outcome} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-md">
-                    <span className="text-sm text-gray-700">{outcome}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveOutcome(outcome)}
-                      className="text-gray-400 hover:text-gray-500"
-                    >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Assertions
+              </label>
+              <Menu as="div" className="relative inline-block text-left">
+                <Menu.Button
+                  onClick={() => setShowAssertionDropdown(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                >
+                  Add Assertion
+                  <ChevronDownIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+                </Menu.Button>
+                <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                  <div className="py-1">
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setAssertionType('page')}
+                          className={`${
+                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                          } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                        >
+                          Page Assertion
+                        </button>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={() => setAssertionType('locator')}
+                          className={`${
+                            active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                          } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                        >
+                          Locator Assertion
+                        </button>
+                      )}
+                    </Menu.Item>
                   </div>
+                </Menu.Items>
+              </Menu>
+            </div>
+
+            {assertionType === 'page' && (
+              <div className="mt-2 space-y-2">
+                {pageAssertions.map((assertion) => (
+                  <button
+                    key={assertion.id}
+                    onClick={() => handleAddAssertion('page', assertion.example)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    {assertion.example}
+                  </button>
                 ))}
               </div>
             )}
+
+            {assertionType === 'locator' && (
+              <div className="mt-2 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Enter element selector (e.g., #submit)"
+                  value={locatorSelector}
+                  onChange={(e) => setLocatorSelector(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
+                />
+                {locatorAssertions.map((assertion) => (
+                  <button
+                    key={assertion.id}
+                    onClick={() => handleAddAssertion('locator', assertion.example, locatorSelector)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    {assertion.example}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4 space-y-2">
+              {assertions.map((assertion, index) => (
+                <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                  <code className="text-sm text-gray-700">{assertion.assertion}</code>
+                  <button
+                    onClick={() => handleRemoveAssertion(index)}
+                    className="text-gray-400 hover:text-gray-500"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -186,34 +263,31 @@ const CreateFlowModal = ({ isOpen, onClose, onSave }: CreateFlowModalProps) => {
             </label>
             <div className="space-y-2">
               {availableGenericAssertions.map((assertion) => (
-                <div key={assertion.id} className="flex items-center">
+                <label key={assertion.id} className="flex items-center">
                   <input
                     type="checkbox"
-                    id={assertion.id}
                     checked={genericAssertions.includes(assertion.id)}
                     onChange={() => handleToggleGenericAssertion(assertion.id)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#584774] focus:ring-[#584774]"
+                    className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
                   />
-                  <label htmlFor={assertion.id} className="ml-2 text-sm text-gray-700">
-                    {assertion.label}
-                  </label>
-                </div>
+                  <span className="ml-2 text-sm text-gray-700">{assertion.label}</span>
+                </label>
               ))}
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end space-x-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !name.trim() || !startingAction}
-              className="px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3d63] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] disabled:opacity-50"
             >
               {isSubmitting ? 'Creating...' : 'Create Flow'}
             </button>

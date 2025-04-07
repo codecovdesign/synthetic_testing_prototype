@@ -6,6 +6,7 @@ interface BreadcrumbItem {
   label: string;
   to?: string;
   icon?: React.ComponentType<{ className?: string }>;
+  state?: any;
 }
 
 interface BreadcrumbProps {
@@ -20,7 +21,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = '' }) => {
         <React.Fragment key={index}>
           {index > 0 && <ChevronRightIcon className="h-4 w-4 text-gray-400" />}
           {item.to ? (
-            <Link to={item.to} className="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+            <Link to={item.to} state={item.state} className="text-gray-600 hover:text-gray-800 flex items-center gap-2">
               {item.icon && <item.icon className="h-5 w-5" />}
               {item.label}
             </Link>

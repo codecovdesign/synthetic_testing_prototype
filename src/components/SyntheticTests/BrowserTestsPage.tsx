@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { ChevronUpIcon, ChevronDownIcon, MagnifyingGlassIcon, ChevronDownIcon as ChevronDownIconSolid, VideoCameraIcon } from '@heroicons/react/24/outline';
 import { Menu } from '@headlessui/react';
 import { subDays } from 'date-fns';
@@ -167,8 +167,21 @@ const mockDailyResults = Array.from({ length: 90 }, (_, i) => {
   };
 });
 
-const BrowserTestsPage: React.FC = () => {
+interface BrowserTestsPageProps {
+  hideHeader?: boolean;
+  hideHeaderAndActions?: boolean;
+  headerText?: string;
+}
+
+const BrowserTestsPage: React.FC<BrowserTestsPageProps> = ({ 
+  hideHeader = false, 
+  hideHeaderAndActions = false,
+  headerText = 'Browser Tests'
+}) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMainPage = location.pathname === '/browser-tests';
+  const shouldShowHeader = !hideHeader && isMainPage;
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'success' | 'error'>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'name', direction: 'asc' });
@@ -246,145 +259,149 @@ const BrowserTestsPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6">
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="space-y-6">
-            <TestResultsChart 
-              openIssuesCount={openIssuesCount}
-              dailyResults={mockDailyResults}
-            />
-            
-            <div className="bg-white rounded-lg shadow">
-              <div className="flex items-center justify-between p-4 border-b">
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search tests..."
-                      className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Based on last run 4 minutes ago from{' '}
-                    <Link to="/retro-pr/1234" className="text-blue-600 hover:text-blue-800">
-                      retro-pr/1234
-                    </Link>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setIsConfigModalOpen(true)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                  >
-                    Configuration
-                  </button>
-                  <Menu as="div" className="relative inline-block text-left">
-                    <Menu.Button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]">
-                      Create Test
-                      <ChevronDownIconSolid className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-                    </Menu.Button>
-                    <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                      <div className="py-1">
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={handleCreateFromSessionReplay}
-                              className={`${
-                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                              } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
-                            >
-                              From Existing Session Replay
-                            </button>
-                          )}
-                        </Menu.Item>
-                        <Menu.Item>
-                          {({ active }) => (
-                            <button
-                              onClick={handleCreateFromEnvironment}
-                              className={`${
-                                active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                              } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
-                            >
-                              From Environment
-                            </button>
-                          )}
-                        </Menu.Item>
+    <div className="h-full">
+      <main className="bg-gray-50 min-h-[calc(100vh-128px)] p-4">
+        <div className="flex-1 overflow-auto">
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <div className="space-y-4">
+                <TestResultsChart 
+                  openIssuesCount={openIssuesCount}
+                  dailyResults={mockDailyResults}
+                />
+                
+                <div className="bg-white rounded-lg shadow">
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search tests..."
+                          className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                       </div>
-                    </Menu.Items>
-                  </Menu>
-                </div>
-              </div>
+                      <div className="text-sm text-gray-600">
+                        Based on last run 4 minutes ago from{' '}
+                        <Link to="/retro-pr/1234" className="text-blue-600 hover:text-blue-800">
+                          retro-pr/1234
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => setIsConfigModalOpen(true)}
+                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                      >
+                        Configuration
+                      </button>
+                      <Menu as="div" className="relative inline-block text-left">
+                        <Menu.Button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]">
+                          Create Test
+                          <ChevronDownIconSolid className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+                        </Menu.Button>
+                        <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                          <div className="py-1">
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={handleCreateFromSessionReplay}
+                                  className={`${
+                                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                  } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                                >
+                                  From Existing Session Replay
+                                </button>
+                              )}
+                            </Menu.Item>
+                            <Menu.Item>
+                              {({ active }) => (
+                                <button
+                                  onClick={handleCreateFromEnvironment}
+                                  className={`${
+                                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                  } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                                >
+                                  From Environment
+                                </button>
+                              )}
+                            </Menu.Item>
+                          </div>
+                        </Menu.Items>
+                      </Menu>
+                    </div>
+                  </div>
 
-              <div className="relative">
-                <div className="overflow-x-auto max-h-[calc(100vh-400px)]">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 sticky top-0">
-                      <tr>
-                        {['Test Name', 'Status', 'Environments', 'URL', 'Issues'].map((header) => (
-                          <th
-                            key={header}
-                            onClick={() => handleSort(header.toLowerCase().replace(' ', '') as keyof Test)}
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                          >
-                            <div className="flex items-center space-x-1">
-                              <span>{header}</span>
-                              <div className="flex flex-col">
-                                <ChevronUpIcon className="h-3 w-3" />
-                                <ChevronDownIcon className="h-3 w-3" />
-                              </div>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredAndSortedTests.map((test) => (
-                        <tr key={test.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleTestClick(test.id, test.name)}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">{test.name}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              test.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
-                              {test.status === 'success' ? 'Passing' : 'Failing'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              {test.environments.map((env) => (
-                                <EnvironmentStatusBadge key={env.name} environment={env} />
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {test.url}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {test.status === 'error' ? (
-                              <Link to={`/browser-tests/${test.id}/issues`} className="text-blue-600 hover:text-blue-800">
-                                {test.name === 'Apply SAVE50' ? '2' : 
-                                 test.name === 'Click adds product to cart' ? '3' :
-                                 test.name === 'Checkout validation' ? '2' : '2'}
-                              </Link>
-                            ) : (
-                              <span className="text-gray-500">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="relative">
+                    <div className="overflow-x-auto max-h-[calc(100vh-400px)]">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50 sticky top-0">
+                          <tr>
+                            {['Test Name', 'Status', 'Environments', 'URL', 'Issues'].map((header) => (
+                              <th
+                                key={header}
+                                onClick={() => handleSort(header.toLowerCase().replace(' ', '') as keyof Test)}
+                                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              >
+                                <div className="flex items-center space-x-1">
+                                  <span>{header}</span>
+                                  <div className="flex flex-col">
+                                    <ChevronUpIcon className="h-3 w-3" />
+                                    <ChevronDownIcon className="h-3 w-3" />
+                                  </div>
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredAndSortedTests.map((test) => (
+                            <tr key={test.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleTestClick(test.id, test.name)}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className="text-sm font-medium text-gray-900">{test.name}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  test.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {test.status === 'success' ? 'Passing' : 'Failing'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  {test.environments.map((env) => (
+                                    <EnvironmentStatusBadge key={env.name} environment={env} />
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {test.url}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {test.status === 'error' ? (
+                                  <Link to={`/browser-tests/${test.id}/issues`} className="text-blue-600 hover:text-blue-800">
+                                    {test.name === 'Apply SAVE50' ? '2' : 
+                                     test.name === 'Click adds product to cart' ? '3' :
+                                     test.name === 'Checkout validation' ? '2' : '2'}
+                                  </Link>
+                                ) : (
+                                  <span className="text-gray-500">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       <ConfigurationModal
         isOpen={isConfigModalOpen}

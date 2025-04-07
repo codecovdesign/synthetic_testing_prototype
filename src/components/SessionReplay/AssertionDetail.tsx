@@ -8,6 +8,19 @@ import Breadcrumb from '../Layout/Breadcrumb';
 import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 import CreateAssertionModal from './CreateAssertionModal';
 
+interface AssertionData {
+  id: string;
+  flowName: string;
+  status: 'passed' | 'failed' | 'untested';
+  lastSeen: string;
+  lastChecked: string;
+  failures: number | null;
+  linkedIssues: string | null;
+  prompt?: string;
+  assertions?: Array<{ type: 'page' | 'locator'; selector?: string; assertion: string }>;
+  genericAssertions?: string[];
+}
+
 interface TabProps {
   label: string;
   isActive: boolean;
@@ -258,24 +271,18 @@ const AssertionDetail = () => {
   };
 
   const handleEditSubmit = (
-    flowName: string, 
-    prompt: string, 
-    conditionType: string, 
-    conditionValue: string,
-    startingAction: string,
-    validOutcomes: string[],
+    flowName: string,
+    prompt: string,
+    assertions: Array<{ type: 'page' | 'locator'; selector?: string; assertion: string }>,
     genericAssertions: string[]
   ) => {
-    // Update the assertion with the new values
-    if (assertion) {
-      assertion.flowName = flowName;
-      assertion.prompt = prompt;
-      assertion.conditionType = conditionType;
-      assertion.conditionValue = conditionValue;
-      assertion.startingAction = startingAction;
-      assertion.validOutcomes = validOutcomes;
-      assertion.genericAssertions = genericAssertions;
-    }
+    // TODO: Implement the actual update logic
+    console.log('Updating assertion:', {
+      flowName,
+      prompt,
+      assertions,
+      genericAssertions
+    });
     setIsEditModalOpen(false);
   };
 
@@ -677,9 +684,9 @@ const AssertionDetail = () => {
           <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
             <Breadcrumb
               items={[
-                { label: 'Session Replay', to: '/session-replay' },
-                { label: 'Flows', to: '/session-replay/assertions' },
-                { label: assertion?.flowName || 'Unknown Assertion' },
+                { label: 'Prevent', to: '/prevent' },
+                { label: 'Flows', to: '/prevent', state: { activeTab: 'flows', fromSuggestedFlow: true } },
+                { label: assertion?.flowName || 'Unknown Assertion' }
               ]}
             />
             <div className="flex items-center gap-3">
@@ -981,32 +988,9 @@ const AssertionDetail = () => {
         onSubmit={handleEditSubmit}
         initialData={{
           flowName: assertion?.flowName || '',
-          prompt: id === '1' 
-            ? 'Verify user can successfully log in and reach the dashboard'
-            : id === '2'
-            ? 'Verify checkout completes successfully with correct total and address form'
-            : 'Verify user can navigate to the home page without errors',
-          conditionType: id === '1' 
-            ? 'no-errors'
-            : id === '2'
-            ? 'ends-on-url'
-            : 'no-errors',
-          conditionValue: id === '1'
-            ? ''
-            : id === '2'
-            ? '/confirmation'
-            : '',
-          startingAction: id === '1'
-            ? 'login_click'
-            : id === '2'
-            ? 'checkout_load'
-            : 'signup_click',
-          validOutcomes: id === '1'
-            ? ['/dashboard']
-            : id === '2'
-            ? ['/confirmation']
-            : ['/home'],
-          genericAssertions: ['no_console_errors', 'no_network_errors']
+          prompt: assertion?.prompt || '',
+          assertions: assertion?.assertions || [],
+          genericAssertions: assertion?.genericAssertions || []
         }}
       />
     </div>
