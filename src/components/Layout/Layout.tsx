@@ -83,9 +83,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex-1 ml-16">
         {children || (
           <>
-            <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
-              <Header />
-            </div>
+            {!location.pathname.match(/\/browser-tests\/\d+/) && !location.pathname.match(/\/browser-tests\/\d+\/issues/) && (
+              <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
+                <Header />
+              </div>
+            )}
             <main className="flex bg-gray-50 h-[calc(100vh-64px)] gap-4 p-4">
               <ErrorBoundary>
                 <div className="flex-1">

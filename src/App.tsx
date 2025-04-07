@@ -13,6 +13,8 @@ import CreateTestPage from './components/SyntheticTests/CreateTestPage';
 import BrowserTestIssuesPage from './components/Issues/BrowserTestIssuesPage';
 import AssertionDetail from './components/SessionReplay/AssertionDetail';
 import AssertionIssuesPage from './components/Issues/AssertionIssuesPage';
+import Prevent from './components/Prevent/Prevent';
+import SuggestedFlowReview from './components/Prevent/SuggestedFlowReview';
 
 const App = () => {
   return (
@@ -31,6 +33,12 @@ const App = () => {
               <AssertionIssuesPage />
             </Layout>
           } />
+          <Route path="/prevent" element={
+            <Layout>
+              <Prevent />
+            </Layout>
+          } />
+          <Route path="/prevent/suggested-flow/:id" element={<SuggestedFlowReview />} />
           <Route path="/browser-tests" element={
             <Layout>
               <BrowserTestsLayout>
@@ -43,23 +51,26 @@ const App = () => {
               <CreateTestPage />
             </Layout>
           } />
-          <Route path="/browser-tests/:testId" element={
+          <Route path="/browser-tests/:id" element={
             <Layout>
-              <BrowserTestDetail />
+              <BrowserTestsLayout>
+                <BrowserTestDetail />
+              </BrowserTestsLayout>
             </Layout>
           } />
-          <Route path="/browser-tests/:testId/issues" element={
+          <Route path="/browser-tests/:id/issues" element={
             <Layout>
-              <BrowserTestIssuesPage />
+              <BrowserTestsLayout>
+                <BrowserTestIssuesPage />
+              </BrowserTestsLayout>
             </Layout>
           } />
-          <Route path="/" element={<Layout />} index />
           <Route path="/issues" element={
             <Layout>
               <IssuesPage />
             </Layout>
           } />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<Navigate to="/browser-tests" replace />} />
         </Routes>
       </div>
     </BrowserRouter>

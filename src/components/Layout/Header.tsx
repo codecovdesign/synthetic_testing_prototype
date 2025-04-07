@@ -170,8 +170,7 @@ const Header: React.FC<HeaderProps> = ({
     <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
       <Breadcrumb
         items={[
-          { label: 'Browser Tests', to: '/browser-tests' },
-          { label: prTitle }
+          { label: 'Browser Tests' }
         ]}
       />
       <Link 

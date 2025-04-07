@@ -145,8 +145,8 @@ const BrowserTestIssuesPage = () => {
 
   // Filter issues to only show those related to the current test
   const filteredIssues = mockIssues.filter(issue => 
-    issue.browserTestName === test?.name
-  ).slice(0, test?.relatedIssues || 0);
+    issue.browserTestName === test?.name || !test?.name
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -202,7 +202,7 @@ const BrowserTestIssuesPage = () => {
                   <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1">
                     <span className="text-sm font-semibold text-gray-700">issue.category</span>
                     <span className="text-sm text-gray-600">browser tests: {test?.name || ''}</span>
-                    <button 
+                    <button
                       onClick={() => setSearchQuery('')}
                       className="ml-1 text-gray-400 hover:text-gray-600"
                     >
@@ -221,6 +221,9 @@ const BrowserTestIssuesPage = () => {
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Issue
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Test File
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Last Seen
@@ -252,6 +255,9 @@ const BrowserTestIssuesPage = () => {
                       <div className="text-sm font-medium text-gray-900">{issue.title}</div>
                       <div className="text-sm text-gray-500">{issue.browserTestName}</div>
                       <div className="text-xs text-gray-400">{issue.testFile}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {issue.testFile}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {issue.lastSeen}
