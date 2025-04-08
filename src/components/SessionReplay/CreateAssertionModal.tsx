@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { Menu } from '@headlessui/react';
 
-interface Assertion {
+export interface Assertion {
   type: 'page' | 'locator' | 'combined';
   selector?: string;
   assertion: string;
