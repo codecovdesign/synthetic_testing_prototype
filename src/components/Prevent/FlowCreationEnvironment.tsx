@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon, StopIcon } from '@heroicons/react/24/solid';
 import Breadcrumb from '../Layout/Breadcrumb';
 import CreateAssertionModal from '../SessionReplay/CreateAssertionModal';
 import FlowConfigurationModal from './FlowConfigurationModal';
@@ -38,59 +38,64 @@ const tabs = [
   'Elements'
 ];
 
+const environments = [
+  { id: '1', name: 'Production', url: 'https://app.example.com' },
+  { id: '2', name: 'Staging', url: 'https://staging.example.com' }
+];
+
 const LoginForm = ({ className = '' }: { className?: string }) => (
-  <div className={`w-full h-full bg-white ${className}`}>
+  <div className={`w-full max-w-[2000px] bg-white shadow-lg rounded-lg ${className}`}>
     {/* Top Navigation Bar */}
-    <div className="bg-[#131921] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="bg-[#131921] text-white rounded-t-lg">
+      <div className="px-8 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold text-white mr-8">amazon</div>
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="text-3xl font-bold text-white mr-12">amazon</div>
+          <div className="flex items-center space-x-6 text-base">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <button className="text-sm hover:underline">Sign in</button>
-          <button className="text-sm hover:underline">Returns & Orders</button>
-          <button className="text-sm hover:underline">Cart</button>
+        <div className="flex items-center space-x-8">
+          <button className="text-base hover:underline">Sign in</button>
+          <button className="text-base hover:underline">Returns & Orders</button>
+          <button className="text-base hover:underline">Cart</button>
         </div>
       </div>
     </div>
 
     {/* Main Content */}
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="max-w-md mx-auto">
-        <div className="border border-gray-200 rounded-lg p-6">
-          <h1 className="text-3xl font-medium mb-4">Sign in</h1>
-          <form className="space-y-4">
+    <div className="px-12 py-12">
+      <div className="max-w-xl mx-auto">
+        <div className="border border-gray-200 rounded-lg p-10">
+          <h1 className="text-4xl font-medium mb-8">Sign in</h1>
+          <form className="space-y-8">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-lg font-medium text-gray-700 mb-3">
                 Email or mobile phone number
               </label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                 placeholder="Enter your email"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-lg font-medium text-gray-700 mb-3">
                 Password
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                 placeholder="Enter your password"
               />
             </div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FFD814] hover:bg-[#F7CA00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD814]"
+              className="w-full flex justify-center py-4 px-6 text-lg border border-transparent rounded-md shadow-sm font-medium text-white bg-[#FFD814] hover:bg-[#F7CA00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD814]"
             >
               Continue
             </button>
@@ -102,56 +107,56 @@ const LoginForm = ({ className = '' }: { className?: string }) => (
 );
 
 const CheckoutForm = ({ className = '' }: { className?: string }) => (
-  <div className={`w-full h-full bg-white ${className}`}>
+  <div className={`w-full max-w-[2000px] bg-white shadow-lg rounded-lg ${className}`}>
     {/* Top Navigation Bar */}
-    <div className="bg-[#131921] text-white">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="bg-[#131921] text-white rounded-t-lg">
+      <div className="px-8 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold text-white mr-8">amazon</div>
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="text-3xl font-bold text-white mr-12">amazon</div>
+          <div className="flex items-center space-x-6 text-base">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <button className="text-sm hover:underline">Sign in</button>
-          <button className="text-sm hover:underline">Returns & Orders</button>
-          <button className="text-sm hover:underline">Cart</button>
+        <div className="flex items-center space-x-8">
+          <button className="text-base hover:underline">Sign in</button>
+          <button className="text-base hover:underline">Returns & Orders</button>
+          <button className="text-base hover:underline">Cart</button>
         </div>
       </div>
     </div>
 
     {/* Main Content */}
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="border border-gray-200 rounded-lg p-6">
-          <h1 className="text-2xl font-medium mb-6">Checkout</h1>
-          <div className="space-y-6">
+    <div className="px-12 py-12">
+      <div className="max-w-4xl mx-auto">
+        <div className="border border-gray-200 rounded-lg p-10">
+          <h1 className="text-3xl font-medium mb-10">Checkout</h1>
+          <div className="space-y-10">
             {/* Shipping Address */}
-            <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-lg font-medium mb-4">Shipping Address</h2>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="border-b border-gray-200 pb-10">
+              <h2 className="text-2xl font-medium mb-8">Shipping Address</h2>
+              <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="firstName" className="block text-lg font-medium text-gray-700 mb-3">
                     First Name
                   </label>
                   <input
                     type="text"
                     id="firstName"
                     name="firstName"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                    className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                     placeholder="Enter first name"
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="lastName" className="block text-lg font-medium text-gray-700 mb-3">
                     Last Name
                   </label>
                   <input
                     type="text"
                     id="lastName"
                     name="lastName"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                    className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                     placeholder="Enter last name"
                   />
                 </div>
@@ -159,17 +164,17 @@ const CheckoutForm = ({ className = '' }: { className?: string }) => (
             </div>
 
             {/* Payment Method */}
-            <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-lg font-medium mb-4">Payment Method</h2>
-              <div className="space-y-4">
+            <div className="border-b border-gray-200 pb-10">
+              <h2 className="text-2xl font-medium mb-8">Payment Method</h2>
+              <div className="space-y-6">
                 <div className="flex items-center">
                   <input
                     type="radio"
                     id="creditCard"
                     name="paymentMethod"
-                    className="h-4 w-4 text-[#FF9900] focus:ring-[#FF9900] border-gray-300"
+                    className="h-5 w-5 text-[#FF9900] focus:ring-[#FF9900] border-gray-300"
                   />
-                  <label htmlFor="creditCard" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="creditCard" className="ml-4 block text-lg font-medium text-gray-700">
                     Credit Card
                   </label>
                 </div>
@@ -205,47 +210,19 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
 ] }) => {
   const navigate = useNavigate();
   const [selectedUrl, setSelectedUrl] = useState(mockUrls[3]); // Default to /login
+  const [selectedEnv, setSelectedEnv] = useState(environments[0]); // Default to Production
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEnvDropdownOpen, setIsEnvDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('breadcrumbs');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(100);
-  const progressBarRef = useRef<HTMLDivElement>(null);
-  const animationIntervalRef = useRef<number>();
-
-  useEffect(() => {
-    if (isPlaying) {
-      animationIntervalRef.current = window.setInterval(() => {
-        setCurrentTime((prevTime) => {
-          if (prevTime >= duration) {
-            setIsPlaying(false);
-            return duration;
-          }
-          return prevTime + 1;
-        });
-      }, 1000);
-    } else {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current);
-      }
-    }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current);
-      }
-    };
-  }, [isPlaying, duration]);
+  const [isRecording, setIsRecording] = useState(false);
 
   const handleUrlSelect = (url: typeof mockUrls[0]) => {
     setIsLoading(true);
     setSelectedUrl(url);
     setIsDropdownOpen(false);
-    setIsPlaying(false);
-    setCurrentTime(0);
     
     // Simulate loading time
     setTimeout(() => {
@@ -259,16 +236,13 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
     navigate('/prevent', { state: { activeTab: 'flows' } });
   };
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!progressBarRef.current) return;
-    const rect = progressBarRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = x / rect.width;
-    setCurrentTime(percentage * duration);
+  const handleRecordClick = () => {
+    if (isRecording) {
+      setIsRecording(false);
+      setIsModalOpen(true);
+    } else {
+      setIsRecording(true);
+    }
   };
 
   const renderTabContent = () => {
@@ -312,6 +286,37 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center space-x-4">
+                {/* Environment Selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsEnvDropdownOpen(!isEnvDropdownOpen)}
+                    className="w-40 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <span className="text-left">{selectedEnv.name}</span>
+                    <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                  </button>
+                  {isEnvDropdownOpen && (
+                    <div className="absolute z-10 mt-1 w-40 bg-white shadow-lg rounded-md border border-gray-200">
+                      <div className="max-h-60 overflow-y-auto">
+                        {environments.map((env) => (
+                          <button
+                            key={env.id}
+                            onClick={() => {
+                              setSelectedEnv(env);
+                              setIsEnvDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+                          >
+                            <div className="font-medium">{env.name}</div>
+                            <div className="text-xs text-gray-500 truncate">{env.url}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* URL Selector */}
                 <div className="relative flex-1">
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -344,74 +349,66 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
                   Configure
                 </button>
                 <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-4 py-2 bg-[#584774] text-white rounded-md shadow-sm hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                  onClick={handleRecordClick}
+                  className={`px-4 py-2 flex items-center space-x-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    isRecording 
+                    ? 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500' 
+                    : 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500'
+                  }`}
                 >
-                  Create Flow
+                  {isRecording ? (
+                    <>
+                      <StopIcon className="h-5 w-5" />
+                      <span>Stop Recording</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex h-3 w-3 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-200 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-100"></span>
+                      </span>
+                      <span>Record Flow</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
-            <div className="flex-1 bg-gray-50 p-4">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#584774]"></div>
-                </div>
-              ) : (
-                <div className="flex flex-col h-full">
-                  <div className="flex-1 overflow-auto">
-                    {selectedUrl.path === '/login' ? (
-                      <LoginForm className={isPlaying ? 'animate-fade-in' : ''} />
-                    ) : selectedUrl.path === '/checkout' ? (
-                      <CheckoutForm className={isPlaying ? 'animate-fade-in' : ''} />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        Select a URL to preview
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-4 bg-white p-4 rounded-lg shadow">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-4">
-                        <button
-                          onClick={handlePlayPause}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          {isPlaying ? (
-                            <PauseIcon className="h-6 w-6" />
-                          ) : (
-                            <PlayIcon className="h-6 w-6" />
-                          )}
-                        </button>
-                        <div className="text-sm text-gray-600">
-                          {Math.floor(currentTime / 60)}:{(currentTime % 60).toString().padStart(2, '0')}
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
-                      </div>
+
+            <div className="flex-1 bg-gray-50 p-4 overflow-auto">
+              <div className="bg-white rounded-lg shadow-sm p-4 h-full">
+                <div className="min-h-[600px] bg-gray-100 rounded-lg relative overflow-y-auto">
+                  {isLoading ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
                     </div>
-                    <div
-                      ref={progressBarRef}
-                      onClick={handleProgressBarClick}
-                      className="h-2 bg-gray-200 rounded-full cursor-pointer"
-                    >
-                      <div
-                        className="h-full bg-[#584774] rounded-full"
-                        style={{ width: `${(currentTime / duration) * 100}%` }}
-                      />
+                  ) : (
+                    <div className="w-full py-8 px-4">
+                      {selectedUrl.path === '/login' ? (
+                        <LoginForm />
+                      ) : selectedUrl.path === '/checkout' ? (
+                        <CheckoutForm />
+                      ) : (
+                        <div className="text-gray-500">Select a URL to preview</div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
+                {isRecording && (
+                  <div className="mt-4 text-gray-500 italic text-center">
+                    Recording in progress...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
           <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
             <div className="flex border-b border-gray-200">
               {tabs.map((tab) => (
                 <Tab
                   key={tab}
                   label={tab}
-                  isActive={activeTab === tab.toLowerCase()}
+                  isActive={activeTab.toLowerCase() === tab.toLowerCase()}
                   onClick={() => setActiveTab(tab.toLowerCase())}
                 />
               ))}
@@ -434,6 +431,7 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
           genericAssertions: []
         }}
       />
+
       <FlowConfigurationModal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
