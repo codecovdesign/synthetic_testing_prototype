@@ -1,8 +1,6 @@
 import React from 'react';
 import { EyeIcon, PlayIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
-import { Menu } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 interface SuggestedFlow {
   id: string;
@@ -77,51 +75,8 @@ const SuggestedFlowsPanel: React.FC<SuggestedFlowsPanelProps> = ({ onWatchReplay
 
   return (
     <div className="w-80 bg-white border-l border-gray-200 h-full flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <Menu as="div" className="relative">
-          <Menu.Button className="w-full flex items-center justify-between px-4 py-2 text-sm font-medium text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]">
-            <span>Create Flow</span>
-            <ChevronDownIcon className="h-4 w-4" />
-          </Menu.Button>
-          <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-            <div className="py-1">
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => {
-                      // TODO: Implement session replay flow creation
-                      console.log('Create flow from session replay');
-                    }}
-                    className={`${
-                      active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                    } block w-full px-4 py-2 text-sm text-left`}
-                  >
-                    From existing session replay
-                  </button>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => {
-                      // TODO: Implement app environment flow creation
-                      console.log('Create flow from app environment');
-                    }}
-                    className={`${
-                      active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                    } block w-full px-4 py-2 text-sm text-left`}
-                  >
-                    From app environment
-                  </button>
-                )}
-              </Menu.Item>
-            </div>
-          </Menu.Items>
-        </Menu>
-      </div>
       <div className="flex-1 overflow-auto">
         <div className="p-4">
-          <h3 className="text-base font-semibold text-gray-900 mb-2">Suggested Flows</h3>
           <div className="space-y-3">
             {mockSuggestedFlows.map((flow) => (
               <div key={flow.id} className="bg-gray-50 rounded-lg p-3">

@@ -15,6 +15,8 @@ import AssertionDetail from './components/SessionReplay/AssertionDetail';
 import AssertionIssuesPage from './components/Issues/AssertionIssuesPage';
 import Prevent from './components/Prevent/Prevent';
 import SuggestedFlowReview from './components/Prevent/SuggestedFlowReview';
+import FlowCreationReplay from './components/Prevent/FlowCreationReplay';
+import FlowCreationEnvironment from './components/Prevent/FlowCreationEnvironment';
 
 const App = () => {
   return (
@@ -39,6 +41,8 @@ const App = () => {
             </Layout>
           } />
           <Route path="/prevent/suggested-flow/:id" element={<SuggestedFlowReview />} />
+          <Route path="/prevent/create-from-replay" element={<FlowCreationReplay />} />
+          <Route path="/prevent/create-from-environment" element={<FlowCreationEnvironment />} />
           <Route path="/browser-tests" element={
             <Layout>
               <BrowserTestsLayout>
