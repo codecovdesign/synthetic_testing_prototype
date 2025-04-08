@@ -3,7 +3,7 @@ import BrowserTestsPage from '../SyntheticTests/BrowserTestsPage';
 import AssertionsPanel from '../SessionReplay/AssertionsPanel';
 import SuggestedFlowsPanel from './SuggestedFlowsPanel';
 import CreateAssertionModal from '../SessionReplay/CreateAssertionModal';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
@@ -12,6 +12,7 @@ const Prevent: React.FC = () => {
   const [showCreateFlowModal, setShowCreateFlowModal] = useState(false);
   const [initialAction, setInitialAction] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (location.state?.fromSuggestedFlow) {
@@ -21,9 +22,12 @@ const Prevent: React.FC = () => {
     }
   }, [location.state]);
 
-  const handleCreateFlow = (data: { startingUrl: string; firstInteraction: string }) => {
-    setInitialAction(data.firstInteraction);
-    setShowCreateFlowModal(true);
+  const handleCreateFlow = (type: 'replay' | 'environment') => {
+    if (type === 'replay') {
+      navigate('/prevent/create-from-replay');
+    } else {
+      navigate('/prevent/create-from-environment');
+    }
   };
 
   const handleWatchReplay = (flowId: string) => {
@@ -72,7 +76,46 @@ const Prevent: React.FC = () => {
                 <div className="flex-1">
                   <AssertionsPanel />
                 </div>
-                <div className="w-80">
+                <div className="w-1/3 bg-white border-l border-gray-200">
+                  <div className="p-4 border-b border-gray-200">
+                    <Menu as="div" className="relative inline-block text-left w-64">
+                      <Menu.Button className="w-full flex items-center justify-between px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]">
+                        <span className="text-left">Create Flow</span>
+                        <ChevronDownIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                      </Menu.Button>
+                      <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => handleCreateFlow('replay')}
+                                className={`${
+                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                              >
+                                From existing session replay
+                              </button>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => handleCreateFlow('environment')}
+                                className={`${
+                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
+                              >
+                                From app environment
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </div>
+                      </Menu.Items>
+                    </Menu>
+                  </div>
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">Suggested Flows</h2>
+                  </div>
                   <SuggestedFlowsPanel onWatchReplay={handleWatchReplay} />
                 </div>
               </div>

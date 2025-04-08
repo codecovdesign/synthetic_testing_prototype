@@ -361,7 +361,19 @@ const suggestedReplays: Replay[] = [
   }
 ];
 
-const FlowCreationReplay: React.FC = () => {
+interface FlowCreationReplayProps {
+  breadcrumbItems?: Array<{
+    label: string;
+    to?: string;
+    state?: { activeTab: string };
+  }>;
+}
+
+const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems = [
+  { label: 'Prevent', to: '/prevent' },
+  { label: 'Flows', to: '/prevent', state: { activeTab: 'flows' } },
+  { label: 'Create new flow from replay' }
+] }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedReplay, setSelectedReplay] = useState<Replay>(mockReplays[0]);
@@ -621,21 +633,17 @@ const FlowCreationReplay: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-        <Breadcrumb
-          items={[
-            { label: 'Prevent', to: '/prevent' },
-            { label: 'Flows', to: '/prevent', state: { activeTab: 'flows' } },
-            { label: 'Create new flow from replay' }
-          ]}
-        />
-        <button
-          onClick={handleClose}
-          className="p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </header>
+      <div className="sticky top-0 bg-white z-40">
+        <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
+          <Breadcrumb items={breadcrumbItems} />
+          <button
+            onClick={() => navigate('/prevent', { state: { activeTab: 'flows' } })}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </header>
+      </div>
 
       <div className="flex-1 overflow-hidden">
         <div className="flex h-full">
