@@ -49,7 +49,7 @@ const LoginForm = ({ className = '' }: { className?: string }) => (
     <div className="bg-[#131921] text-white rounded-t-lg">
       <div className="px-8 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-3xl font-bold text-white mr-12">amazon</div>
+          <div className="text-3xl font-bold text-white mr-12">Turing-Corp</div>
           <div className="flex items-center space-x-6 text-base">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
@@ -64,42 +64,51 @@ const LoginForm = ({ className = '' }: { className?: string }) => (
     </div>
 
     {/* Main Content */}
-    <div className="px-12 py-12">
-      <div className="max-w-xl mx-auto">
-        <div className="border border-gray-200 rounded-lg p-10">
-          <h1 className="text-4xl font-medium mb-8">Sign in</h1>
-          <form className="space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <div className="border border-gray-200 rounded-lg p-6">
+          <h1 className="text-3xl font-medium mb-4">Sign in</h1>
+          <form className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-lg font-medium text-gray-700 mb-3">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email or mobile phone number
               </label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                 placeholder="Enter your email"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-lg font-medium text-gray-700 mb-3">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                className="block w-full px-5 py-4 text-lg border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:border-[#FF9900]"
                 placeholder="Enter your password"
               />
             </div>
             <button
               type="submit"
-              className="w-full flex justify-center py-4 px-6 text-lg border border-transparent rounded-md shadow-sm font-medium text-white bg-[#FFD814] hover:bg-[#F7CA00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD814]"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FFD814] hover:bg-[#F7CA00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD814]"
             >
               Continue
             </button>
           </form>
+          <div className="mt-4 text-sm text-gray-500">
+            By continuing, you agree to Turing-Corp's <a href="#" className="text-blue-600 hover:underline">Conditions of Use</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Notice</a>.
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-center">
+              <span className="text-sm text-gray-500">New to Turing-Corp?</span>
+              <button className="ml-1 text-sm text-blue-600 hover:underline">Create your Turing-Corp account</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -112,7 +121,7 @@ const CheckoutForm = ({ className = '' }: { className?: string }) => (
     <div className="bg-[#131921] text-white rounded-t-lg">
       <div className="px-8 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-3xl font-bold text-white mr-12">amazon</div>
+          <div className="text-3xl font-bold text-white mr-12">Turing-Corp</div>
           <div className="flex items-center space-x-6 text-base">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
@@ -210,9 +219,7 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
 ] }) => {
   const navigate = useNavigate();
   const [selectedUrl, setSelectedUrl] = useState(mockUrls[3]); // Default to /login
-  const [selectedEnv, setSelectedEnv] = useState(environments[0]); // Default to Production
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isEnvDropdownOpen, setIsEnvDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -286,36 +293,6 @@ const FlowCreationEnvironment: React.FC<FlowCreationEnvironmentProps> = ({ bread
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center space-x-4">
-                {/* Environment Selector */}
-                <div className="relative">
-                  <button
-                    onClick={() => setIsEnvDropdownOpen(!isEnvDropdownOpen)}
-                    className="w-40 flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <span className="text-left">{selectedEnv.name}</span>
-                    <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-                  </button>
-                  {isEnvDropdownOpen && (
-                    <div className="absolute z-10 mt-1 w-40 bg-white shadow-lg rounded-md border border-gray-200">
-                      <div className="max-h-60 overflow-y-auto">
-                        {environments.map((env) => (
-                          <button
-                            key={env.id}
-                            onClick={() => {
-                              setSelectedEnv(env);
-                              setIsEnvDropdownOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
-                          >
-                            <div className="font-medium">{env.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{env.url}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 {/* URL Selector */}
                 <div className="relative flex-1">
                   <button

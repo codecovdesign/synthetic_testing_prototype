@@ -44,7 +44,7 @@ const LoginForm = ({ className = '' }: { className?: string }) => (
     <div className="bg-[#131921] text-white">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold text-white mr-8">amazon</div>
+          <div className="text-2xl font-bold text-white mr-8">Turing-Corp</div>
           <div className="flex items-center space-x-4 text-sm">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
@@ -96,12 +96,12 @@ const LoginForm = ({ className = '' }: { className?: string }) => (
             </button>
           </form>
           <div className="mt-4 text-sm text-gray-500">
-            By continuing, you agree to Amazon's <a href="#" className="text-blue-600 hover:underline">Conditions of Use</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Notice</a>.
+            By continuing, you agree to Turing-Corp's <a href="#" className="text-blue-600 hover:underline">Conditions of Use</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Notice</a>.
           </div>
           <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center justify-center">
-              <span className="text-sm text-gray-500">New to Amazon?</span>
-              <button className="ml-1 text-sm text-blue-600 hover:underline">Create your Amazon account</button>
+              <span className="text-sm text-gray-500">New to Turing-Corp?</span>
+              <button className="ml-1 text-sm text-blue-600 hover:underline">Create your Turing-Corp account</button>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ const CheckoutForm = ({ className = '' }: { className?: string }) => (
     <div className="bg-[#131921] text-white">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold text-white mr-8">amazon</div>
+          <div className="text-2xl font-bold text-white mr-8">Turing-Corp</div>
           <div className="flex items-center space-x-4 text-sm">
             <span className="text-gray-300">Deliver to</span>
             <span className="font-medium">United States</span>
