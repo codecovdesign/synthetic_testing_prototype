@@ -81,7 +81,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Navbar />
       </div>
       <div className="flex-1 ml-16">
-        {children || (
+        {location.pathname === '/issues' || 
+         location.pathname === '/prevent' || 
+         location.pathname === '/assertion-issues' ||
+         location.pathname === '/browser-tests/create' ||
+         location.pathname.match(/^\/browser-tests\/\d+$/) ? (
+          children
+        ) : (
           <>
             {!location.pathname.match(/\/browser-tests\/\d+/) && !location.pathname.match(/\/browser-tests\/\d+\/issues/) && (
               <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
