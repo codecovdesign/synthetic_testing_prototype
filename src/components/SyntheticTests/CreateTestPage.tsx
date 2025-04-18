@@ -40,7 +40,7 @@ const CreateTestPage: React.FC = () => {
       <div className="flex-1">
         <div className="sticky top-0 bg-white z-40 border-b border-gray-200">
           <div className="flex items-center space-x-2 text-sm text-gray-500 p-4">
-            <button onClick={() => navigate('/browser-tests')} className="hover:text-gray-700">
+            <button onClick={() => navigate('/prevent')} className="hover:text-gray-700">
               Browser Tests
             </button>
             <ChevronRightIcon className="h-4 w-4" />

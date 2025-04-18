@@ -133,9 +133,9 @@ const PullRequestView = () => {
                     </ul>
 
                     <div className="mt-4">
-                      <a href="/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                      <Link to="/browser-tests" className="text-blue-600 hover:text-blue-800">
                         🔍 Open Preview & Create Test
-                      </a>
+                      </Link>
                     </div>
 
                     <details className="mt-4">

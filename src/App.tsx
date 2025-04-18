@@ -17,6 +17,7 @@ import Prevent from './components/Prevent/Prevent';
 import SuggestedFlowReview from './components/Prevent/SuggestedFlowReview';
 import FlowCreationReplay from './components/Prevent/FlowCreationReplay';
 import FlowCreationEnvironment from './components/Prevent/FlowCreationEnvironment';
+import PRFlowView from './components/PRFlow/PRFlowView';
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/pr/:id/browser-tests" element={<PullRequestView />} />
           <Route path="/pr/:id" element={<PullRequestView />} />
           <Route path="/retro-pr/:id" element={<RetroTestingPullRequestView />} />
+          <Route path="/prflow/:id" element={<PRFlowView />} />
           <Route path="/session-replay/:id" element={<SessionReplayDetail />} />
           <Route path="/session-replay" element={<SessionReplayView />} />
           <Route path="/session-replay/assertions" element={<SessionReplayView />} />
@@ -62,11 +64,9 @@ const App = () => {
               </BrowserTestsLayout>
             </Layout>
           } />
-          <Route path="/browser-tests/:id/issues" element={
+          <Route path="/browser-test-issues" element={
             <Layout>
-              <BrowserTestsLayout>
-                <BrowserTestIssuesPage />
-              </BrowserTestsLayout>
+              <BrowserTestIssuesPage />
             </Layout>
           } />
           <Route path="/issues" element={
@@ -74,7 +74,7 @@ const App = () => {
               <IssuesPage />
             </Layout>
           } />
-          <Route path="/" element={<Navigate to="/browser-tests" replace />} />
+          <Route path="/" element={<Navigate to="/prevent" replace />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -21,7 +21,7 @@ interface Issue {
 const mockIssues: Issue[] = [
   {
     id: '123',
-    title: 'TypeError: Cannot read property \'address\' of undefined',
+    title: 'Assertion failed: expect(locator("#payment-method")).toBeVisible() — locator is not visible',
     testFile: 'checkout.spec.ts',
     browserTestName: 'Checkout Flow',
     lastSeen: '2h ago',
@@ -31,13 +31,13 @@ const mockIssues: Issue[] = [
     users: 43,
     priority: 'high',
     assignee: '@kelly',
-    error: 'TypeError: Cannot read property \'address\' of undefined',
-    stack: 'at verifyCartTotal (checkout.js:45:12)\nat runCheckoutFlow (checkout.js:89:5)',
+    error: 'AssertionError: Expected element #billing-address to be visible',
+    stack: 'at verifyBillingForm (checkout.js:45:12)\nat runCheckoutFlow (checkout.js:89:5)',
     url: 'https://example.com/checkout'
   },
   {
     id: '127',
-    title: 'POST /api/checkout failed with 500 Internal Server Error',
+    title: 'Assertion failed: expect(page).toHaveURL("/checkout/summary") — expected "/checkout/summary", but got "/checkout/error"',
     testFile: 'checkout.spec.ts',
     browserTestName: 'Checkout Flow',
     lastSeen: '4h ago',
@@ -47,8 +47,8 @@ const mockIssues: Issue[] = [
     users: 28,
     priority: 'high',
     assignee: '@mike',
-    error: 'AssertionError: Expected element to be visible: By(css selector, ".shipping-address-form")',
-    stack: 'at verifyShippingForm (checkout.js:23:8)\nat runCheckoutFlow (checkout.js:89:5)',
+    error: 'AssertionError: Expected cart total to be $50.00, but found $0.00',
+    stack: 'at verifyCartTotal (checkout.js:23:8)\nat runCheckoutFlow (checkout.js:89:5)',
     url: 'https://example.com/checkout'
   }
 ];

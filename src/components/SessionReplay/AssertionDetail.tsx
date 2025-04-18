@@ -97,6 +97,8 @@ const AssertionDetail = () => {
   const [tos, setTos] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showFailingAssertion, setShowFailingAssertion] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState('');
 
   useEffect(() => {
     document.title = `Assertion - ${assertion?.flowName || 'Unknown Assertion'}`;
@@ -106,6 +108,8 @@ const AssertionDetail = () => {
     // Set the URL based on the assertion ID
     if (id === '2') { // Checkout Flow assertion
       setUrl('turing-corp.com/checkout');
+    } else if (id === '8') { // Search Functionality assertion
+      setUrl('turing-corp.com/search');
     } else {
       setUrl('turing-corp.com/accountcreation');
     }
@@ -251,12 +255,62 @@ const AssertionDetail = () => {
     }
   };
 
+  const animateSearch = (timestamp: number) => {
+    if (!startTimeRef.current) startTimeRef.current = timestamp;
+    const elapsed = timestamp - startTimeRef.current;
+    const duration = 10000; // 10 seconds
+    const progress = Math.min(elapsed / duration, 1);
+    
+    setProgress(progress * 100);
+
+    if (previewRef.current) {
+      const rect = previewRef.current.getBoundingClientRect();
+
+      if (id === '8') { // Search Functionality assertion
+        const searchInput = document.getElementById('search-input') as HTMLInputElement;
+        const searchButton = document.getElementById('search-button');
+
+        if (progress < 0.3) {
+          if (searchInput) {
+            const inputRect = searchInput.getBoundingClientRect();
+            setCursorPosition({
+              x: inputRect.left - rect.left + 10,
+              y: inputRect.top - rect.top + 10
+            });
+            setSearchQuery('modern furniture'.slice(0, Math.floor(progress * 3.33 * 13)));
+            searchInput.focus();
+          }
+        } else if (progress < 0.6) {
+          if (searchButton) {
+            const buttonRect = searchButton.getBoundingClientRect();
+            setCursorPosition({
+              x: buttonRect.left - rect.left + buttonRect.width / 2,
+              y: buttonRect.top - rect.top + buttonRect.height / 2
+            });
+            if (progress > 0.55) {
+              setSearchError('Error: Search service unavailable. The backend service returned a 503 error.');
+            }
+          }
+        }
+      }
+    }
+
+    if (progress < 1) {
+      animationRef.current = requestAnimationFrame(animateSearch);
+    } else {
+      setIsPlaying(false);
+      setShowCursor(false);
+    }
+  };
+
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
     if (!isPlaying) {
       setShowCursor(true);
       startTimeRef.current = undefined;
-      animationRef.current = requestAnimationFrame(animateSignup);
+      setSearchQuery('');
+      setSearchError('');
+      animationRef.current = requestAnimationFrame(id === '8' ? animateSearch : animateSignup);
     } else {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -346,43 +400,12 @@ const AssertionDetail = () => {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Linked Issues</h3>
                   <p className="mt-1 text-sm text-gray-900">
-                    {id === '5' ? (
-                      'No issue detected'
-                    ) : (
-                      <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
-                        2 related issues
-                      </a>
-                    )}
+                    <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
+                      3 related issues
+                    </a>
                   </p>
                 </div>
               </div>
-
-              {/* Failing Assertion Section - Only for assertion/5 */}
-              {id === '5' && showFailingAssertion && (
-                <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-sm font-medium text-gray-700">Failing Assertion</h3>
-                    <button 
-                      onClick={() => setShowFailingAssertion(false)}
-                      className="text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-4">
-                    While there are no linked issues, this assertion is failing because the expected user action did not occur: input[name="username"] was never focused.
-                  </p>
-                  <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                  >
-                    Update assertion details
-                  </button>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="border-t border-gray-200 my-6"></div>
 
               {/* Assertion Details Section */}
               <div className="bg-gray-50 rounded-lg p-4">
@@ -398,44 +421,26 @@ const AssertionDetail = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <p className="mt-1 text-sm text-gray-900">{assertion?.prompt || 'No description provided'}</p>
+                    <p className="mt-1 text-sm text-gray-900">User performs a search and expects to see relevant results</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Starting Action</label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {id === '1' 
-                        ? 'User clicks Login'
-                        : id === '2'
-                        ? 'Page loads /checkout'
-                        : 'User clicks Sign Up'}
-                    </p>
+                    <p className="mt-1 text-sm text-gray-900">User enters search query in the search bar</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Valid Outcomes</label>
                     <div className="mt-1 space-y-1">
-                      {id === '1' 
-                        ? ['/dashboard'].map((outcome) => (
-                            <div key={outcome} className="text-sm text-gray-900">
-                              {outcome}
-                            </div>
-                          ))
-                        : id === '2'
-                        ? ['/confirmation'].map((outcome) => (
-                            <div key={outcome} className="text-sm text-gray-900">
-                              {outcome}
-                            </div>
-                          ))
-                        : ['/home'].map((outcome) => (
-                            <div key={outcome} className="text-sm text-gray-900">
-                              {outcome}
-                            </div>
-                          ))}
+                      {['Search results page loads with matching items', 'No results message shown for empty results'].map((outcome) => (
+                        <div key={outcome} className="text-sm text-gray-900">
+                          {outcome}
+                        </div>
+                      ))}
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Generic Assertions</label>
                     <div className="mt-1 space-y-1">
-                      {['No console errors', 'No network errors'].map((assertion) => (
+                      {['No console errors', 'No network errors', 'Search results load within 2 seconds'].map((assertion) => (
                         <div key={assertion} className="flex items-center text-sm text-gray-900">
                           <span className="mr-2">✓</span>
                           {assertion}
@@ -445,24 +450,12 @@ const AssertionDetail = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Condition Type</label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {id === '1' 
-                        ? 'No errors in replay'
-                        : id === '2'
-                        ? 'Ends on URL'
-                        : 'No errors in replay'}
-                    </p>
+                    <p className="mt-1 text-sm text-gray-900">No errors in replay</p>
                   </div>
-                  {id === '2' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Condition Value</label>
-                      <p className="mt-1 text-sm text-gray-900">/confirmation</p>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Failure Details Section - Only shown when status is failing */}
+              {/* Failure Details Section */}
               {assertion?.status === 'failed' && (
                 <div className="bg-gray-50 rounded-lg p-4 mt-4">
                   <h3 className="text-sm font-medium text-gray-500 mb-4">Why this flow failed</h3>
@@ -470,17 +463,17 @@ const AssertionDetail = () => {
                   <div className="space-y-4">
                     <div>
                       <div className="text-sm font-medium text-gray-700">Failure Type:</div>
-                      <div className="text-sm text-gray-600 mt-1">Redirected to unexpected page (/settings)</div>
+                      <div className="text-sm text-gray-600 mt-1">Backend service error (503 Service Unavailable)</div>
                     </div>
 
                     <div>
                       <div className="text-sm font-medium text-gray-700">Expected Outcome(s):</div>
-                      <div className="text-sm text-gray-600 mt-1">/dashboard or /home</div>
+                      <div className="text-sm text-gray-600 mt-1">Search results page or "No results" message</div>
                     </div>
 
                     <div>
                       <div className="text-sm font-medium text-gray-700">Actual Outcome:</div>
-                      <div className="text-sm text-gray-600 mt-1">/settings</div>
+                      <div className="text-sm text-gray-600 mt-1">Error message: "Search service unavailable"</div>
                     </div>
 
                     <div>
@@ -493,7 +486,7 @@ const AssertionDetail = () => {
                           >
                             #351
                           </span>
-                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -503,7 +496,7 @@ const AssertionDetail = () => {
                           >
                             #352
                           </span>
-                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -513,7 +506,7 @@ const AssertionDetail = () => {
                           >
                             #353
                           </span>
-                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -523,7 +516,7 @@ const AssertionDetail = () => {
                           >
                             #354
                           </span>
-                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -533,7 +526,7 @@ const AssertionDetail = () => {
                           >
                             #355
                           </span>
-                          <span className="text-sm text-gray-600">redirected to /settings</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -543,7 +536,7 @@ const AssertionDetail = () => {
                           >
                             #356
                           </span>
-                          <span className="text-sm text-gray-600">timed out (no next step)</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -553,7 +546,7 @@ const AssertionDetail = () => {
                           >
                             #357
                           </span>
-                          <span className="text-sm text-gray-600">timed out (no next step)</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -563,7 +556,7 @@ const AssertionDetail = () => {
                           >
                             #358
                           </span>
-                          <span className="text-sm text-gray-600">hit an error page (/error-500)</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
                           <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -573,8 +566,8 @@ const AssertionDetail = () => {
                           >
                             #359
                           </span>
-                          <span className="text-sm text-gray-600">successfully reached /dashboard</span>
-                          <span className="text-sm text-green-500">✅</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
+                          <span className="text-sm text-red-500">❌</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span 
@@ -583,15 +576,15 @@ const AssertionDetail = () => {
                           >
                             #360
                           </span>
-                          <span className="text-sm text-gray-600">successfully reached /dashboard</span>
-                          <span className="text-sm text-green-500">✅</span>
+                          <span className="text-sm text-gray-600">search service returned 503</span>
+                          <span className="text-sm text-red-500">❌</span>
                         </div>
                       </div>
                     </div>
 
                     <div>
                       <div className="text-sm font-medium text-gray-700">Replays Affected:</div>
-                      <div className="text-sm text-gray-600 mt-1">8 failed, 2 passed</div>
+                      <div className="text-sm text-gray-600 mt-1">10 failed, 0 passed</div>
                     </div>
                   </div>
                 </div>
@@ -741,6 +734,31 @@ const AssertionDetail = () => {
                           </div>
                           <h1 className="text-xl font-bold text-gray-900">MockPin</h1>
                         </div>
+                        <div className="flex-1 max-w-xl mx-8">
+                          <div className="relative">
+                            <input
+                              id="search-input"
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              placeholder="Search for ideas"
+                              className="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                            </div>
+                            <button
+                              id="search-button"
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            >
+                              <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                         <div className="flex items-center space-x-4">
                           <button className="text-gray-700 hover:text-gray-900">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -763,7 +781,31 @@ const AssertionDetail = () => {
                   {/* Content Area - Centered with Max Width */}
                   <div className="p-8">
                     <div className="max-w-2xl mx-auto">
-                      {id === '2' ? (
+                      {id === '8' ? (
+                        <div className="space-y-6 bg-white rounded-lg p-6 shadow-sm">
+                          {searchError ? (
+                            <div className="text-center py-12">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <h2 className="text-xl font-semibold text-gray-900 mb-2">Search Failed</h2>
+                              <p className="text-gray-600">{searchError}</p>
+                            </div>
+                          ) : (
+                            <div className="text-center py-12">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                              </div>
+                              <h2 className="text-xl font-semibold text-gray-900 mb-2">Search for ideas</h2>
+                              <p className="text-gray-600">Enter a search term to find inspiration</p>
+                            </div>
+                          )}
+                        </div>
+                      ) : id === '2' ? (
                         <div className="space-y-6 bg-white rounded-lg p-6 shadow-sm">
                           {/* Header */}
                           <div className="flex items-center justify-between mb-8">

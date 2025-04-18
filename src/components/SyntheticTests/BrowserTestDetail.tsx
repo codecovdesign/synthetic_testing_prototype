@@ -1036,7 +1036,7 @@ describe('${currentTestName}', () => {
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <Link to="/browser-tests" className="hover:text-gray-700">
+            <Link to="/prevent" className="hover:text-gray-700">
               Browser Tests
             </Link>
             <span>/</span>
@@ -1120,7 +1120,7 @@ describe('${currentTestName}', () => {
                 })}
                 {(test.name === 'Apply SAVE50' || test.name === 'Click adds product to cart' || test.name === 'Checkout validation') && (
                   <div className="mt-3 pt-3 border-t border-gray-200">
-                    <Link to={`/browser-tests/${test.id}/issues`} className="text-sm text-blue-600 hover:text-blue-800">
+                    <Link to="/issues" className="text-sm text-blue-600 hover:text-blue-800">
                       {test.name === 'Click adds product to cart' ? '3 related issues' :
                        test.name === 'Apply SAVE50' ? '2 related issues' :
                        test.name === 'Checkout validation' ? '2 related issues' : ''}

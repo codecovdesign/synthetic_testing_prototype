@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 const CommentActions = () => (
   <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
@@ -15,8 +15,9 @@ const CommentActions = () => (
   </div>
 );
 
-const RetroTestingPullRequestView = () => {
+const PRFlowView = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Update page title
@@ -30,6 +31,10 @@ const RetroTestingPullRequestView = () => {
       document.head.appendChild(favicon);
     }
   }, [id]);
+
+  const handleAssertionClick = (assertionId: string, assertionData: any) => {
+    navigate(`/assertion/${assertionId}`, { state: { assertion: assertionData } });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,14 +95,7 @@ const RetroTestingPullRequestView = () => {
                     </div>
                   </div>
                   <div className="bg-white px-4 py-4 prose max-w-none border-l border-r border-b border-gray-200 rounded-b-md">
-                    <p>This pull request fixes a critical bug in the checkout flow where promo codes were not being properly validated against the Redis cache. The issue was causing intermittent failures during high-traffic periods.</p>
-                    
-                    <h3 className="mt-4">Changes</h3>
-                    <ul>
-                      <li>Added proper error handling for Redis connection timeouts</li>
-                      <li>Improved error messages for better debugging</li>
-                      <li>Updated test suite to cover edge cases</li>
-                    </ul>
+                    <p>This pull request introduces a new feature that allows users to apply promotional codes during checkout. The update includes enhancements to the checkout form, backend validation, and user feedback messaging for promo code entry.</p>
                   </div>
                 </div>
               </div>
@@ -120,13 +118,72 @@ const RetroTestingPullRequestView = () => {
                   </div>
                   <div className="bg-white px-4 py-4 prose max-w-none border-l border-r border-b border-gray-200 rounded-b-md">
                     <h2 className="text-lg font-semibold flex items-center gap-2 mt-0">
-                      🛠 Browser test report will run after merge
+                      🧪 Flows Report
                     </h2>
                     
-                    <div className="mt-4">
-                      <Link to="/prevent" className="text-blue-600 hover:text-blue-800">
-                        View results here
-                      </Link>
+                    <p className="mt-4">There are flows that are related to areas where changes were made. In the previous check, one appeared to be failing.</p>
+
+                    <div className="mt-4 overflow-x-auto">
+                      <table className="min-w-full text-sm">
+                        <thead>
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Flow Name</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Seen</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Checked</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Failures</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Linked Issues</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          <tr>
+                            <td className="px-3 py-2">
+                              <button
+                                onClick={() => handleAssertionClick('2', {
+                                  id: '2',
+                                  flowName: 'Checkout Flow',
+                                  status: 'failed',
+                                  lastSeen: 'a4b5c6d – Release 1.31.0',
+                                  lastChecked: 'Release 2.1.0',
+                                  failures: 3,
+                                  linkedIssues: 'ISSUE-123'
+                                })}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                Checkout Flow
+                              </button>
+                            </td>
+                            <td className="px-3 py-2">❌ Failed</td>
+                            <td className="px-3 py-2">a4b5c6d – Release 1.31.0</td>
+                            <td className="px-3 py-2">Release 2.1.0</td>
+                            <td className="px-3 py-2">3</td>
+                            <td className="px-3 py-2">ISSUE-123</td>
+                          </tr>
+                          <tr>
+                            <td className="px-3 py-2">
+                              <button
+                                onClick={() => handleAssertionClick('2', {
+                                  id: '2',
+                                  flowName: 'Payment Processing',
+                                  status: 'passed',
+                                  lastSeen: 'm4n5o6p – Release 1.31.0',
+                                  lastChecked: 'Release 2.1.0',
+                                  failures: null,
+                                  linkedIssues: 'no issues detected'
+                                })}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                Payment Processing
+                              </button>
+                            </td>
+                            <td className="px-3 py-2">✅ Passed</td>
+                            <td className="px-3 py-2">m4n5o6p – Release 1.31.0</td>
+                            <td className="px-3 py-2">Release 2.1.0</td>
+                            <td className="px-3 py-2">—</td>
+                            <td className="px-3 py-2">no issues detected</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -152,8 +209,7 @@ const RetroTestingPullRequestView = () => {
               <div className="bg-white rounded-lg border border-gray-200 p-4">
                 <h3 className="text-sm font-medium text-gray-900">Labels</h3>
                 <div className="mt-2 space-y-2">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">bug</span>
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">needs-review</span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">needs-review</span>
                 </div>
               </div>
 
@@ -183,4 +239,4 @@ const RetroTestingPullRequestView = () => {
   );
 };
 
-export default RetroTestingPullRequestView; 
+export default PRFlowView; 

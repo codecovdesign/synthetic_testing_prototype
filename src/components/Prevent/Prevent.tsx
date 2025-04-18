@@ -105,7 +105,7 @@ const Prevent: React.FC = () => {
                                   active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
                                 } group flex w-full items-center rounded-md px-4 py-2 text-sm`}
                               >
-                                From app environment
+                                From production
                               </button>
                             )}
                           </Menu.Item>

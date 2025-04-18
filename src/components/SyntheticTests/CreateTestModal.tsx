@@ -5,9 +5,10 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 interface CreateTestModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (testName: string, environments: string[]) => void;
 }
 
-const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose }) => {
+const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [testName, setTestName] = useState('');
   const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
 
@@ -18,8 +19,12 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose }) =>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle test creation logic here
-    onClose();
+    if (testName.trim() && selectedEnvironments.length > 0) {
+      onSubmit(testName, selectedEnvironments);
+      setTestName('');
+      setSelectedEnvironments([]);
+      onClose();
+    }
   };
 
   return (
@@ -28,10 +33,9 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose }) =>
       onClose={onClose}
       className="fixed inset-0 z-10 overflow-y-auto"
     >
+      <div className="fixed inset-0 bg-black bg-opacity-30" />
       <div className="flex items-center justify-center min-h-screen">
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
-        <div className="relative bg-white rounded-lg max-w-md w-full mx-4 p-6">
+        <Dialog.Panel className="relative bg-white rounded-lg max-w-md w-full mx-4 p-6">
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title className="text-lg font-medium text-gray-900">
               Create New Test
@@ -95,13 +99,14 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose }) =>
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                disabled={!testName.trim() || selectedEnvironments.length === 0}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Test
               </button>
             </div>
           </form>
-        </div>
+        </Dialog.Panel>
       </div>
     </Dialog>
   );

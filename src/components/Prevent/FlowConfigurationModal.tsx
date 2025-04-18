@@ -21,13 +21,6 @@ interface FlowConfigurationModalProps {
 
 const mockEnvironments: Environment[] = [
   {
-    id: '1',
-    name: 'Staging',
-    baseUrl: 'https://staging.example.com',
-    authType: 'none',
-    startPath: '/login'
-  },
-  {
     id: '2',
     name: 'Production',
     baseUrl: 'https://app.example.com',
@@ -182,7 +175,7 @@ const FlowConfigurationModal: React.FC<FlowConfigurationModalProps> = ({ isOpen,
               onClick={() => setShowNewEnvironment(true)}
               className="mt-6 w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
             >
-              + Create New Environment
+              Edit Production Details
             </button>
           ) : (
             <div className="mt-6 space-y-4">

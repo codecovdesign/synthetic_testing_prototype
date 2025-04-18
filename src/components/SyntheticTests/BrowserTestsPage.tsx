@@ -252,10 +252,21 @@ const BrowserTestsPage: React.FC<BrowserTestsPageProps> = ({
     navigate('/browser-tests/create');
   };
 
+  const handleCreateTest = (testName: string, environments: string[]) => {
+    console.log('Creating test:', { testName, environments });
+    setIsCreateModalOpen(false);
+  };
+
   const statusOptions = [
     { value: 'all', label: 'All Tests' },
     { value: 'success', label: 'Passing' },
     { value: 'error', label: 'Failing' }
+  ];
+
+  const breadcrumbItems = [
+    { name: 'Prevent', href: '/prevent' },
+    { name: 'Browser Tests', href: '/prevent' },
+    { name: 'Test Details', href: '#' }
   ];
 
   return (
@@ -410,6 +421,7 @@ const BrowserTestsPage: React.FC<BrowserTestsPageProps> = ({
       <CreateTestModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateTest}
       />
     </div>
   );
