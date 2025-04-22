@@ -7,11 +7,26 @@ export default defineConfig({
   server: {
     port: 5175,
     strictPort: true,
-    host: true
+    host: true,
+    watch: {
+      usePolling: false,
+      ignored: ['**/node_modules/**', '**/.git/**'],
+    },
+    hmr: {
+      overlay: true,
+      timeout: 30000,
+    }
   },
   resolve: {
     alias: {
       '@': '/src'
     }
+  },
+  build: {
+    sourcemap: true
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@headlessui/react', '@heroicons/react'],
+    exclude: []
   }
 }) 

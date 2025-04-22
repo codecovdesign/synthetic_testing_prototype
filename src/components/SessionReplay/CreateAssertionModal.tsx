@@ -30,7 +30,7 @@ interface CreateAssertionModalProps {
 }
 
 const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
-  const [flowName, setFlowName] = useState(initialData?.flowName || '');
+  const [flowName, setFlowName] = useState(initialData?.flowName || 'Login');
   const [prompt, setPrompt] = useState(initialData?.prompt || '');
   const [assertions, setAssertions] = useState<Assertion[]>(initialData?.assertions || []);
   const [genericAssertions, setGenericAssertions] = useState<string[]>(initialData?.genericAssertions || []);
@@ -44,6 +44,19 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
     locatorType: 'toBeVisible',
     locatorValue: ''
   });
+  const [showExamples, setShowExamples] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState('User enters credentials and lands on dashboard');
+  const [isUpdatingSuggestion, setIsUpdatingSuggestion] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [suggestionApplied, setSuggestionApplied] = useState(false);
+  const [lastGeneratedAssertion, setLastGeneratedAssertion] = useState<string | null>(null);
+  const [generatedAssertions, setGeneratedAssertions] = useState([
+    "expect(page).toHaveURL('/dashboard')",
+    "expect(locator('#welcome-message')).toContainText('Welcome back')"
+  ]);
+  const [copied, setCopied] = useState(false);
+
+  const DYNAMIC_ASSERTION_INDEX = 2;  // Index where we'll always put the dynamic assertion
 
   const pageAssertionTypes = [
     { id: 'toHaveUrl', label: 'toHaveUrl', placeholder: '/dashboard' },
@@ -70,6 +83,13 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
       setPrompt(initialData.prompt);
       setAssertions(initialData.assertions);
       setGenericAssertions(initialData.genericAssertions);
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    // Pre-populate the prompt with the AI suggestion
+    if (!initialData?.prompt) {
+      setPrompt(aiSuggestion);
     }
   }, [initialData]);
 
@@ -102,9 +122,67 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
     onClose();
   };
 
-  const handleSuggestionClick = () => {
-    if (!prompt.trim()) {
-      setPrompt('Account creation fields entered correctly and successful submission');
+  const handleUpdateSuggestion = () => {
+    setIsUpdatingSuggestion(true);
+    setTimeout(() => {
+      setIsUpdatingSuggestion(false);
+    }, 1500);
+  };
+
+  const handleFlowNameBlur = () => {
+    if (flowName.trim()) {
+      setIsGenerating(true);
+      setTimeout(() => {
+        const newAssertion = `expect(locator('#${flowName.toLowerCase()}-button')).toBeVisible()`;
+        setGeneratedAssertions(prev => {
+          const newAssertions = [...prev];
+          if (newAssertions.length > DYNAMIC_ASSERTION_INDEX) {
+            newAssertions[DYNAMIC_ASSERTION_INDEX] = newAssertion;
+          } else {
+            newAssertions.push(newAssertion);
+          }
+          return newAssertions;
+        });
+        setIsGenerating(false);
+      }, 1500);
+    }
+  };
+
+  const handleFlowNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    setFlowName(newName);
+    setIsGenerating(true);
+    setTimeout(() => {
+      const newAssertion = `expect(locator('#${newName.toLowerCase()}-button')).toBeVisible()`;
+      setGeneratedAssertions(prev => {
+        const newAssertions = [...prev];
+        if (newAssertions.length > DYNAMIC_ASSERTION_INDEX) {
+          newAssertions[DYNAMIC_ASSERTION_INDEX] = newAssertion;
+        } else {
+          newAssertions.push(newAssertion);
+        }
+        return newAssertions;
+      });
+      setIsGenerating(false);
+    }, 1500);
+  };
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+  };
+
+  const handlePromptBlur = () => {
+    if (prompt.trim()) {
+      setIsGenerating(true);
+      setTimeout(() => {
+        const newAssertion = 'expect(value).toBe(user-password)';
+        setGeneratedAssertions(prev => {
+          const newAssertions = [...prev];
+          newAssertions.push(newAssertion);
+          return newAssertions;
+        });
+        setIsGenerating(false);
+      }, 1000);
     }
   };
 
@@ -147,24 +225,82 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
               <textarea
                 id="prompt"
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={handlePromptChange}
+                onBlur={handlePromptBlur}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
                 rows={3}
                 placeholder="Describe what this assertion should verify"
               />
-              <button
-                type="button"
-                onClick={handleSuggestionClick}
-                className="mt-2 text-sm text-[#584774] hover:text-[#4a3c62]"
-              >
-                Need inspiration? Click here for a suggestion
-              </button>
             </div>
+
+            <div className="mt-4 relative">
+              <div className="space-y-2">
+                {generatedAssertions.map((assertion, index) => (
+                  <div key={index} className="bg-gray-50 p-2 rounded text-sm text-gray-700">
+                    {assertion}
+                  </div>
+                ))}
+              </div>
+              {isGenerating && (
+                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <span className="animate-pulse">✨</span>
+                    <span>Generating suggestions...</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex justify-end mt-4 gap-2">
+                {suggestionApplied ? (
+                  <>
+                    <button
+                      type="button"
+                      className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 flex items-center gap-1"
+                      disabled
+                    >
+                      Suggestion applied ✅
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSuggestionApplied(false)}
+                      className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200"
+                    >
+                      Edit
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsGenerating(true);
+                      setTimeout(() => {
+                        setIsGenerating(false);
+                        setSuggestionApplied(true);
+                      }, 1000);
+                    }}
+                    className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 flex items-center gap-1"
+                  >
+                    {isGenerating ? (
+                      <div className="flex items-center gap-1">
+                        <svg className="animate-spin h-4 w-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Updating...</span>
+                      </div>
+                    ) : (
+                      <span>✨ Use Suggestion</span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <hr className="my-6 border-gray-200" />
 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Assertions
+                  Manual Assertions
                 </label>
                 <Menu as="div" className="relative inline-block text-left">
                   <Menu.Button

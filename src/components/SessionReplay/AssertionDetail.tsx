@@ -19,6 +19,7 @@ interface AssertionData {
   prompt?: string;
   assertions?: Array<{ type: 'page' | 'locator'; selector?: string; assertion: string }>;
   genericAssertions?: string[];
+  createdBy?: { type: 'user' | 'ai'; name?: string };
 }
 
 interface TabProps {
@@ -384,6 +385,26 @@ const AssertionDetail = () => {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Status</h3>
                   <p className="mt-1 text-sm text-gray-900">{getStatusDisplay(assertion?.status || 'untested')}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Created By</h3>
+                  <div className="mt-1 flex items-center">
+                    {assertion?.createdBy?.type === 'user' ? (
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full bg-[#584774] flex items-center justify-center text-white font-medium text-sm mr-2">
+                          {assertion.createdBy.name?.split(' ').map(part => part[0]).join('').toUpperCase()}
+                        </div>
+                        <span className="text-sm text-gray-900">{assertion.createdBy.name}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-medium text-sm mr-2">
+                          ✨
+                        </div>
+                        <span className="text-sm text-gray-900">AI-generated</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Last Seen</h3>
