@@ -236,8 +236,17 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
             <div className="mt-4 relative">
               <div className="space-y-2">
                 {generatedAssertions.map((assertion, index) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded text-sm text-gray-700">
-                    {assertion}
+                  <div key={index} className="bg-gray-50 p-2 rounded">
+                    <input
+                      type="text"
+                      value={assertion}
+                      onChange={(e) => {
+                        const newAssertions = [...generatedAssertions];
+                        newAssertions[index] = e.target.value;
+                        setGeneratedAssertions(newAssertions);
+                      }}
+                      className="w-full bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774] px-2 py-1"
+                    />
                   </div>
                 ))}
               </div>
