@@ -5,8 +5,8 @@ import Navbar from '../Layout/Navbar';
 import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
-import { ArrowLeftIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
-import CreateAssertionModal from './CreateAssertionModal';
+import { ArrowLeftIcon, ExclamationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import CreateAssertionModal, { Assertion } from './CreateAssertionModal';
 
 interface AssertionData {
   id: string;
@@ -16,9 +16,7 @@ interface AssertionData {
   lastChecked: string;
   failures: number | null;
   linkedIssues: string | null;
-  prompt?: string;
-  assertions?: Array<{ type: 'page' | 'locator'; selector?: string; assertion: string }>;
-  genericAssertions?: string[];
+  assertions?: Assertion[];
   createdBy?: { type: 'user' | 'ai'; name?: string };
 }
 
@@ -327,17 +325,13 @@ const AssertionDetail = () => {
 
   const handleEditSubmit = (
     flowName: string,
-    prompt: string,
-    assertions: Array<{ type: 'page' | 'locator'; selector?: string; assertion: string }>,
-    genericAssertions: string[]
+    assertions: Assertion[]
   ) => {
-    // TODO: Implement the actual update logic
-    console.log('Updating assertion:', {
-      flowName,
-      prompt,
-      assertions,
-      genericAssertions
-    });
+    // Update the assertion data
+    if (assertion) {
+      assertion.flowName = flowName;
+      assertion.assertions = assertions;
+    }
     setIsEditModalOpen(false);
   };
 
@@ -392,7 +386,7 @@ const AssertionDetail = () => {
                     {assertion?.createdBy?.type === 'user' ? (
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-[#584774] flex items-center justify-center text-white font-medium text-sm mr-2">
-                          {assertion.createdBy.name?.split(' ').map(part => part[0]).join('').toUpperCase()}
+                          {assertion.createdBy.name?.split(' ').map((part: string) => part[0]).join('').toUpperCase()}
                         </div>
                         <span className="text-sm text-gray-900">{assertion.createdBy.name}</span>
                       </div>
@@ -439,39 +433,48 @@ const AssertionDetail = () => {
                     Edit Flow
                   </button>
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <p className="mt-1 text-sm text-gray-900">User performs a search and expects to see relevant results</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Starting Action</label>
-                    <p className="mt-1 text-sm text-gray-900">User enters search query in the search bar</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Valid Outcomes</label>
-                    <div className="mt-1 space-y-1">
-                      {['Search results page loads with matching items', 'No results message shown for empty results'].map((outcome) => (
-                        <div key={outcome} className="text-sm text-gray-900">
-                          {outcome}
-                        </div>
-                      ))}
+
+                {/* Flow Range Breadcrumbs */}
+                <div className="mb-6">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="ml-2 text-sm text-gray-600">Page Load</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">/login</span>
+                    <span className="text-sm text-gray-500">00:00</span>
+                    <div className="flex items-center text-green-600">
+                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      <span className="text-xs">Flow Start</span>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Generic Assertions</label>
-                    <div className="mt-1 space-y-1">
-                      {['No console errors', 'No network errors', 'Search results load within 2 seconds'].map((assertion) => (
-                        <div key={assertion} className="flex items-center text-sm text-gray-900">
-                          <span className="mr-2">✓</span>
-                          {assertion}
-                        </div>
-                      ))}
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      <span className="ml-2 text-sm text-gray-600">Navigation</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">/dashboard</span>
+                    <span className="text-sm text-gray-500">00:15</span>
+                    <div className="flex items-center text-green-600">
+                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      <span className="text-xs">Flow End</span>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Condition Type</label>
-                    <p className="mt-1 text-sm text-gray-900">No errors in replay</p>
+                </div>
+
+                {/* Assertions Section */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Assertions at end of flow:</label>
+                  <div className="space-y-2">
+                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
+                      expect(page).toHaveURL('/dashboard')
+                    </div>
+                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
+                      expect(locator('#welcome-message')).toContainText('Welcome back')
+                    </div>
+                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
+                      expect(locator('#user-profile')).toBeVisible()
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1051,9 +1054,7 @@ const AssertionDetail = () => {
         onSubmit={handleEditSubmit}
         initialData={{
           flowName: assertion?.flowName || '',
-          prompt: assertion?.prompt || '',
-          assertions: assertion?.assertions || [],
-          genericAssertions: assertion?.genericAssertions || []
+          assertions: assertion?.assertions || []
         }}
       />
     </div>
