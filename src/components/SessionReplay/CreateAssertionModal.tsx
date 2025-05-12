@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
-import { Menu } from '@headlessui/react';
+import { XMarkIcon, ChevronDownIcon, SparklesIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Menu, Dialog } from '@headlessui/react';
 
 export interface Assertion {
-  type: 'page' | 'locator' | 'combined';
-  selector?: string;
-  assertion: string;
-  pageAssertion?: {
-    type: string;
-    value: string;
-  };
-  locatorAssertion?: {
-    selector: string;
-    type: string;
-    value?: string;
-  };
+  selector: string;
+  type: 'exists' | 'visible' | 'enabled' | 'contains';
+  value?: string;
 }
 
 interface CreateAssertionModalProps {
@@ -27,13 +18,36 @@ interface CreateAssertionModalProps {
     assertions: Assertion[];
     genericAssertions: string[];
   };
+  flowRange?: {
+    start: {
+      type: string;
+      name: string;
+      timestamp: string;
+    };
+    end: {
+      type: string;
+      name: string;
+      timestamp: string;
+    };
+  };
 }
 
-const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
-  const [flowName, setFlowName] = useState(initialData?.flowName || 'Login');
-  const [prompt, setPrompt] = useState(initialData?.prompt || '');
-  const [assertions, setAssertions] = useState<Assertion[]>(initialData?.assertions || []);
-  const [genericAssertions, setGenericAssertions] = useState<string[]>(initialData?.genericAssertions || []);
+const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData = {
+    flowName: '',
+    prompt: '',
+    assertions: [],
+    genericAssertions: []
+  },
+  flowRange
+}) => {
+  const [flowName, setFlowName] = useState(initialData.flowName);
+  const [prompt, setPrompt] = useState(initialData.prompt);
+  const [assertions, setAssertions] = useState<Assertion[]>(initialData.assertions);
+  const [genericAssertions, setGenericAssertions] = useState<string[]>(initialData.genericAssertions);
   const [assertionType, setAssertionType] = useState<'page' | 'locator' | 'combined' | null>(null);
   const [currentInputValue, setCurrentInputValue] = useState('');
   const [selectedAssertion, setSelectedAssertion] = useState<{ type: 'page' | 'locator' | 'combined', id: string } | null>(null);
@@ -93,13 +107,17 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
     }
   }, [initialData]);
 
-  const handleAddAssertion = (type: 'page' | 'locator' | 'combined', assertion: string, selector?: string) => {
-    setAssertions([...assertions, { type, assertion, selector }]);
-    setCurrentInputValue('');
-    setSelectedAssertion(null);
+  const handleAssertionChange = (index: number, field: keyof Assertion, value: string) => {
+    const newAssertions = [...assertions];
+    newAssertions[index] = { ...newAssertions[index], [field]: value };
+    setAssertions(newAssertions);
   };
 
-  const handleRemoveAssertion = (index: number) => {
+  const addAssertion = () => {
+    setAssertions([...assertions, { selector: '', type: 'exists' }]);
+  };
+
+  const removeAssertion = (index: number) => {
     setAssertions(assertions.filter((_, i) => i !== index));
   };
 
@@ -113,7 +131,7 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(flowName, prompt, assertions, genericAssertions);
+    onSubmit(flowName, '', assertions, []);
     setFlowName('');
     setPrompt('');
     setAssertions([]);
@@ -186,6 +204,42 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
     }
   };
 
+  const generateFlowDescription = () => {
+    if (!flowRange) return '';
+    
+    const startPath = flowRange.start.name;
+    const endPath = flowRange.end.name;
+    
+    // Extract the main action from the end path
+    const endAction = endPath.split('/').pop() || '';
+    
+    // Generate a natural language description
+    return `User proceeds from ${startPath} through the flow and lands on ${endAction} page.`;
+  };
+
+  const handleUseSuggestion = () => {
+    const description = generateFlowDescription();
+    setPrompt(description);
+    
+    // Add some basic assertions based on the flow
+    const newAssertions: Assertion[] = [
+      {
+        selector: '',
+        type: 'exists',
+        value: ''
+      }
+    ];
+    
+    const newGenericAssertions = [
+      'No console errors',
+      'No 404s',
+      'No JavaScript errors'
+    ];
+    
+    setAssertions(newAssertions);
+    setGenericAssertions(newGenericAssertions);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -204,103 +258,86 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
         </div>
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
           <div className="p-6 space-y-6 overflow-y-auto flex-1">
-            <div className="pt-4">
-              <label htmlFor="flowName" className="block text-sm font-medium text-gray-700 mb-1">
-                Flow Name
-              </label>
-              <input
-                type="text"
-                id="flowName"
-                value={flowName}
-                onChange={(e) => setFlowName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                id="prompt"
-                value={prompt}
-                onChange={handlePromptChange}
-                onBlur={handlePromptBlur}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
-                rows={3}
-                placeholder="Describe what this assertion should verify"
-              />
-            </div>
-
-            <div className="mt-4 relative">
-              <div className="space-y-2">
-                {generatedAssertions.map((assertion, index) => (
-                  <div key={index} className="bg-gray-50 p-2 rounded">
-                    <input
-                      type="text"
-                      value={assertion}
-                      onChange={(e) => {
-                        const newAssertions = [...generatedAssertions];
-                        newAssertions[index] = e.target.value;
-                        setGeneratedAssertions(newAssertions);
-                      }}
-                      className="w-full bg-transparent text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774] px-2 py-1"
-                    />
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="flowName" className="block text-sm font-medium text-gray-700">
+                  Flow Name
+                </label>
+                <input
+                  type="text"
+                  id="flowName"
+                  value={flowName}
+                  onChange={(e) => setFlowName(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
+                  placeholder="Enter flow name"
+                />
               </div>
-              {isGenerating && (
-                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span className="animate-pulse">✨</span>
-                    <span>Generating suggestions...</span>
+
+              {flowRange && (
+                <div className="bg-gray-50 p-3 rounded-md">
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Flow Range:</span>
+                    <div className="mt-1">
+                      <div>Start: {flowRange.start.name}</div>
+                      <div>End: {flowRange.end.name}</div>
+                    </div>
                   </div>
                 </div>
               )}
-              <div className="flex justify-end mt-4 gap-2">
-                {suggestionApplied ? (
-                  <>
-                    <button
-                      type="button"
-                      className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 flex items-center gap-1"
-                      disabled
-                    >
-                      Suggestion applied ✅
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSuggestionApplied(false)}
-                      className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200"
-                    >
-                      Edit
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsGenerating(true);
-                      setTimeout(() => {
-                        setIsGenerating(false);
-                        setSuggestionApplied(true);
-                      }, 1000);
-                    }}
-                    className="px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 flex items-center gap-1"
-                  >
-                    {isGenerating ? (
-                      <div className="flex items-center gap-1">
-                        <svg className="animate-spin h-4 w-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Updating...</span>
-                      </div>
-                    ) : (
-                      <span>✨ Use Suggestion</span>
-                    )}
-                  </button>
-                )}
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700">Add assertion to end</h3>
+                  <div className="mt-2">
+                    <div className="space-y-2">
+                      {assertions.map((assertion, index) => (
+                        <div key={index} className="flex items-start space-x-2">
+                          <input
+                            type="text"
+                            value={assertion.selector}
+                            onChange={(e) => handleAssertionChange(index, 'selector', e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
+                            placeholder="Element selector"
+                          />
+                          <select
+                            value={assertion.type}
+                            onChange={(e) => handleAssertionChange(index, 'type', e.target.value as 'exists' | 'visible' | 'enabled' | 'contains')}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
+                          >
+                            <option value="exists">Exists</option>
+                            <option value="visible">Visible</option>
+                            <option value="enabled">Enabled</option>
+                            <option value="contains">Contains Text</option>
+                          </select>
+                          {assertion.type === 'contains' && (
+                            <input
+                              type="text"
+                              value={assertion.value || ''}
+                              onChange={(e) => handleAssertionChange(index, 'value', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774]"
+                              placeholder="Expected text"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeAssertion(index)}
+                            className="p-2 text-gray-400 hover:text-gray-600"
+                          >
+                            <XMarkIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={addAssertion}
+                        className="mt-2 w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                      >
+                        <PlusIcon className="h-5 w-5 mr-2" />
+                        Add Assertion
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -394,7 +431,7 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
                                 assertion.placeholder || '',
                                 currentInputValue
                               );
-                              handleAddAssertion('page', newExample);
+                              handleAssertionChange(DYNAMIC_ASSERTION_INDEX, 'selector', newExample);
                             }}
                             className="px-4 py-2 text-sm text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
                           >
@@ -437,7 +474,7 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
                                 assertion.placeholder || '',
                                 currentInputValue
                               );
-                              handleAddAssertion('locator', newExample, currentInputValue);
+                              handleAssertionChange(DYNAMIC_ASSERTION_INDEX, 'selector', newExample);
                             }}
                             className="px-4 py-2 text-sm text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
                           >
@@ -520,17 +557,9 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
                       const combinedAssertionString = `${pageAssertion} && ${locatorAssertion}`;
                       
                       setAssertions([...assertions, {
-                        type: 'combined',
-                        assertion: combinedAssertionString,
-                        pageAssertion: {
-                          type: combinedAssertion.pageType,
-                          value: combinedAssertion.pageValue
-                        },
-                        locatorAssertion: {
-                          selector: combinedAssertion.locatorSelector,
-                          type: combinedAssertion.locatorType,
-                          value: combinedAssertion.locatorValue
-                        }
+                        selector: combinedAssertion.locatorSelector,
+                        type: combinedAssertion.locatorType as 'exists' | 'visible' | 'enabled' | 'contains',
+                        value: combinedAssertion.locatorValue
                       }]);
 
                       // Reset the form but keep the modal open
@@ -552,9 +581,9 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
               <div className="mt-4 space-y-2">
                 {assertions.map((assertion, index) => (
                   <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
-                    <code className="text-sm text-gray-700">{assertion.assertion}</code>
+                    <code className="text-sm text-gray-700">{assertion.selector}</code>
                     <button
-                      onClick={() => handleRemoveAssertion(index)}
+                      onClick={() => removeAssertion(index)}
                       className="text-gray-400 hover:text-gray-500"
                     >
                       <XMarkIcon className="h-5 w-5" />
@@ -596,7 +625,7 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({ isOpen, onC
                 type="submit"
                 className="px-4 py-2 text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
               >
-                Create Assertion
+                Create Flow
               </button>
             </div>
           </div>

@@ -9,12 +9,15 @@ export default defineConfig({
     strictPort: true,
     host: true,
     watch: {
-      usePolling: false,
+      usePolling: true,
+      interval: 1000,
       ignored: [
         '**/node_modules/**',
         '**/.git/**',
         '**/dist/**',
-        '**/.vite/**'
+        '**/.vite/**',
+        '**/coverage/**',
+        '**/.DS_Store'
       ]
     },
     hmr: {
@@ -22,9 +25,16 @@ export default defineConfig({
       timeout: 30000,
       protocol: 'ws',
       host: 'localhost',
-      port: 5175
+      port: 5175,
+      clientPort: 5175,
+      path: '/hmr'
     },
-    cors: true
+    cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
+    }
   },
   resolve: {
     alias: {
@@ -54,5 +64,9 @@ export default defineConfig({
     modules: {
       localsConvention: 'camelCase'
     }
-  }
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+  },
+  logLevel: 'info'
 }) 

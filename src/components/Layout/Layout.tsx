@@ -85,8 +85,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
          location.pathname === '/prevent' || 
          location.pathname === '/assertion-issues' ||
          location.pathname === '/browser-tests/create' ||
+         location.pathname === '/browser-test-issues' ||
          location.pathname.match(/^\/browser-tests\/\d+$/) ? (
-          children
+          <div className="h-full">
+            {children}
+          </div>
         ) : (
           <>
             {!location.pathname.match(/\/browser-tests\/\d+/) && !location.pathname.match(/\/browser-tests\/\d+\/issues/) && (

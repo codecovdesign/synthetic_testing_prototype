@@ -161,8 +161,12 @@ const AssertionIssuesPage = () => {
                   <tr key={issue.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{issue.title}</div>
-                      <div className="text-sm text-gray-500">{issue.browserTestName}</div>
-                      <div className="text-xs text-gray-400">{issue.testFile}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          ✨ AI detected
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">{issue.testFile}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {issue.lastSeen}

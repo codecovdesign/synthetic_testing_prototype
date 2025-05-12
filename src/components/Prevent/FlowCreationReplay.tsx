@@ -4,6 +4,7 @@ import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownI
 import Breadcrumb from '../Layout/Breadcrumb';
 import { Menu } from '@headlessui/react';
 import CreateAssertionModal, { Assertion } from '../SessionReplay/CreateAssertionModal';
+import FlowBreadcrumbs from '../SessionReplay/FlowBreadcrumbs';
 
 interface TabProps {
   label: string;
@@ -391,6 +392,9 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
   const previewRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [flowStartIndex, setFlowStartIndex] = useState<number | null>(null);
+  const [flowEndIndex, setFlowEndIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const filteredReplays = replayFilter === 'suggested' 
     ? suggestedReplays.filter(replay => 
@@ -594,25 +598,129 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
     }
   };
 
+  const handleFlowStart = (index: number) => {
+    setFlowStartIndex(index);
+    setFlowEndIndex(null);
+  };
+
+  const handleFlowEnd = (index: number) => {
+    if (flowStartIndex !== null && index > flowStartIndex) {
+      setFlowEndIndex(index);
+    }
+  };
+
+  const mockSteps = [
+    {
+      id: '1',
+      type: 'Page Load',
+      name: '/cart',
+      timestamp: '00:00'
+    },
+    {
+      id: '2',
+      type: 'Click',
+      name: 'MainWrapper > Button[aria-label="Proceed to Checkout"]',
+      timestamp: '00:04'
+    },
+    {
+      id: '3',
+      type: 'Navigation',
+      name: '/checkout/shipping',
+      timestamp: '00:04'
+    },
+    {
+      id: '4',
+      type: 'Input',
+      name: 'Form > Input[name="address"]',
+      timestamp: '00:07'
+    },
+    {
+      id: '5',
+      type: 'Input',
+      name: 'Form > Input[name="city"]',
+      timestamp: '00:10'
+    },
+    {
+      id: '6',
+      type: 'Input',
+      name: 'Form > Input[name="zip"]',
+      timestamp: '00:12'
+    },
+    {
+      id: '7',
+      type: 'Click',
+      name: 'Button[type="submit"]',
+      timestamp: '00:15'
+    },
+    {
+      id: '8',
+      type: 'Navigation',
+      name: '/checkout/payment',
+      timestamp: '00:15'
+    },
+    {
+      id: '9',
+      type: 'Input',
+      name: 'Form > Input[name="cardNumber"]',
+      timestamp: '00:17'
+    },
+    {
+      id: '10',
+      type: 'Input',
+      name: 'Form > Input[name="expiration"]',
+      timestamp: '00:20'
+    },
+    {
+      id: '11',
+      type: 'Click',
+      name: 'Button[type="submit"]',
+      timestamp: '00:23'
+    },
+    {
+      id: '12',
+      type: 'Navigation',
+      name: '/checkout/confirmation',
+      timestamp: '00:23'
+    },
+    {
+      id: '13',
+      type: 'Page Load',
+      name: '/checkout/confirmation',
+      timestamp: '00:23'
+    }
+  ];
+
   const renderTabContent = () => {
     switch (activeTab.toLowerCase()) {
       case 'breadcrumbs':
         return (
           <div className="p-4">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium text-gray-900">00:00</span>
-                <span className="text-sm text-gray-600">Page Load: /login</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium text-gray-900">00:06</span>
-                <span className="text-sm text-gray-600">User Click: button[type="submit"]</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                <span className="text-sm font-medium text-gray-900">00:06</span>
-                <span className="text-sm text-gray-600">Navigation: /dashboard</span>
-              </div>
-            </div>
+            <FlowBreadcrumbs
+              steps={mockSteps}
+              onSelectStart={(id) => {
+                const index = mockSteps.findIndex(step => step.id === id);
+                if (index !== -1) {
+                  setFlowStartIndex(index);
+                  // If end is before start, clear it
+                  if (flowEndIndex !== null && flowEndIndex < index) {
+                    setFlowEndIndex(null);
+                  }
+                }
+              }}
+              onSelectEnd={(id) => {
+                const index = mockSteps.findIndex(step => step.id === id);
+                if (index !== -1 && flowStartIndex !== null && index > flowStartIndex) {
+                  setFlowEndIndex(index);
+                }
+              }}
+              selectedStartId={flowStartIndex !== null ? mockSteps[flowStartIndex]?.id : null}
+              selectedEndId={flowEndIndex !== null ? mockSteps[flowEndIndex]?.id : null}
+              onFlowRangeSelected={() => {
+                if (flowStartIndex !== null && flowEndIndex !== null) {
+                  setIsModalOpen(true);
+                }
+              }}
+            />
           </div>
         );
       default:
@@ -714,12 +822,12 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
                     </div>
                   )}
                 </div>
-                <button
+                {/* <button
                   onClick={() => setIsModalOpen(true)}
                   className="px-4 py-2 bg-[#584774] text-white rounded-md shadow-sm hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
                 >
                   Create Flow
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -799,7 +907,7 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
             </div>
           </div>
 
-          <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+          <div className="w-[40rem] bg-white border-l border-gray-200 flex flex-col">
             <div className="flex border-b border-gray-200">
               {tabs.map((tab) => (
                 <Tab
@@ -827,6 +935,10 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
           assertions: [],
           genericAssertions: []
         }}
+        flowRange={flowStartIndex !== null && flowEndIndex !== null ? {
+          start: mockSteps[flowStartIndex],
+          end: mockSteps[flowEndIndex]
+        } : undefined}
       />
     </div>
   );
