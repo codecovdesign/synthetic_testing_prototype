@@ -83,6 +83,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex-1 ml-16">
         {location.pathname === '/issues' || 
          location.pathname === '/prevent' || 
+         location.pathname === '/prevent/create-from-replay' ||
+         location.pathname === '/prevent/create-from-environment' ||
+         location.pathname.match(/^\/prevent\/suggested-flow\/\d+$/) ||
          location.pathname === '/assertion-issues' ||
          location.pathname === '/browser-tests/create' ||
          location.pathname === '/browser-test-issues' ||
