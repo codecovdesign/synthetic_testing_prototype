@@ -6,6 +6,7 @@ interface CreateTestModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (testName: string, environments: string[], addedAssertions: string) => void;
+  hideAssertions?: boolean;
 }
 
 const predefinedAssertions = [
@@ -75,7 +76,13 @@ interface AssertionInput {
   isOpen: boolean;
 }
 
-const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSubmit, hideAssertions = false }) => {
+  console.log('CreateTestModal render, isOpen:', isOpen);
+  
+  React.useEffect(() => {
+    console.log('CreateTestModal mounted/updated, isOpen:', isOpen);
+  }, [isOpen]);
+
   const [testName, setTestName] = useState('');
   const [selectedEnvironments, setSelectedEnvironments] = useState<string[]>([]);
   const [assertionInputs, setAssertionInputs] = useState<AssertionInput[]>([]);
@@ -180,14 +187,13 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (testName.trim() && selectedEnvironments.length > 0) {
+    if (testName.trim()) {
       const assertionString = assertionInputs
         .filter(input => input.selectedAssertion)
         .map(input => input.selectedAssertion)
         .join(' AND ');
-      onSubmit(testName, selectedEnvironments, assertionString);
+      onSubmit(testName, [], assertionString);
       setTestName('');
-      setSelectedEnvironments([]);
       setAssertionInputs([]);
       onClose();
     }
@@ -197,12 +203,12 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
     <Dialog
       open={isOpen}
       onClose={onClose}
-      className="fixed inset-0 z-10 overflow-y-auto"
+      className="fixed inset-0 z-[9999] overflow-y-auto"
     >
-      <div className="fixed inset-0 bg-black bg-opacity-30" />
-      <div className="flex items-center justify-center min-h-screen">
-        <Dialog.Panel className="relative bg-white rounded-lg max-w-md w-full mx-4 p-6">
-          <div className="flex justify-between items-center mb-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50" aria-hidden="true" />
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Dialog.Panel className="relative bg-white rounded-lg max-w-md w-full mx-4 p-6 shadow-xl border border-gray-200">
+          <div className="flex justify-between items-center mb-4 border-b pb-4">
             <Dialog.Title className="text-lg font-medium text-gray-900">
               Create New Flow
             </Dialog.Title>
@@ -217,7 +223,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="testName" className="block text-sm font-medium text-gray-700">
-                Test Name
+                Flow Name
               </label>
               <input
                 type="text"
@@ -225,117 +231,96 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
                 value={testName}
                 onChange={(e) => setTestName(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
-                placeholder="Enter test name"
+                placeholder="Enter flow name"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Environments
-              </label>
-              <div className="space-y-2">
-                {environments.map((env) => (
-                  <label key={env.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedEnvironments.includes(env.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedEnvironments([...selectedEnvironments, env.id]);
-                        } else {
-                          setSelectedEnvironments(selectedEnvironments.filter(id => id !== env.id));
-                        }
-                      }}
-                      className="h-4 w-4 text-[#584774] focus:ring-[#584774] border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{env.name}</span>
+            {!hideAssertions && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Assertions
                   </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assertions
-              </label>
-              <div className="space-y-3">
-                {assertionInputs.map((input) => (
-                  <div key={input.id} className="relative">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex-1 relative">
-                        {input.selectedAssertion ? (
-                          <div className="flex items-center space-x-2 bg-gray-50 rounded-md px-3 py-2">
-                            <span className="font-mono text-sm text-gray-900">{input.selectedAssertion}</span>
-                            <button
-                              type="button"
-                              onClick={() => setAssertionInputs(prev => 
-                                prev.map(i => i.id === input.id ? { ...i, selectedAssertion: null, search: '' } : i)
-                              )}
-                              className="text-gray-400 hover:text-gray-500"
-                            >
-                              <XMarkIcon className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <input
-                              type="text"
-                              value={input.search}
-                              onChange={(e) => handleAssertionSearch(input.id, e.target.value)}
-                              onFocus={() => setAssertionInputs(prev => 
-                                prev.map(i => i.id === input.id ? { ...i, isOpen: true } : i)
-                              )}
-                              onKeyDown={(e) => handleKeyDown(e, input.id)}
-                              placeholder="Type to search assertions..."
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
-                            />
-                            {input.isOpen && (
-                              <div
-                                ref={el => dropdownRefs.current[input.id] = el}
-                                className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm"
-                              >
-                                {predefinedAssertions
-                                  .filter(a => 
-                                    a.label.toLowerCase().includes(input.search.toLowerCase()) ||
-                                    a.description.toLowerCase().includes(input.search.toLowerCase())
-                                  )
-                                  .map((assertion, index) => (
-                                    <div
-                                      key={assertion.id}
-                                      className={`cursor-pointer select-none relative py-2 px-3 ${
-                                        index === (highlightedIndices[input.id] ?? -1) ? 'bg-[#584774] text-white' : 'hover:bg-gray-100'
-                                      }`}
-                                      onClick={() => handleAssertionSelect(input.id, assertion)}
-                                      onMouseEnter={() => setHighlightedIndices(prev => ({ ...prev, [input.id]: index }))}
-                                    >
-                                      <div className="flex flex-col">
-                                        <span className={`font-mono text-sm ${index === (highlightedIndices[input.id] ?? -1) ? 'text-white' : ''}`}>
-                                          {assertion.label}
-                                        </span>
-                                        <span className={`text-xs ${index === (highlightedIndices[input.id] ?? -1) ? 'text-gray-200' : 'text-gray-500'}`}>
-                                          {assertion.description}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  ))}
+                  <div className="space-y-3">
+                    {assertionInputs.map((input) => (
+                      <div key={input.id} className="relative">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex-1 relative">
+                            {input.selectedAssertion ? (
+                              <div className="flex items-center space-x-2 bg-gray-50 rounded-md px-3 py-2">
+                                <span className="font-mono text-sm text-gray-900">{input.selectedAssertion}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setAssertionInputs(prev => 
+                                    prev.map(i => i.id === input.id ? { ...i, selectedAssertion: null, search: '' } : i)
+                                  )}
+                                  className="text-gray-400 hover:text-gray-500"
+                                >
+                                  <XMarkIcon className="h-4 w-4" />
+                                </button>
                               </div>
+                            ) : (
+                              <>
+                                <input
+                                  type="text"
+                                  value={input.search}
+                                  onChange={(e) => handleAssertionSearch(input.id, e.target.value)}
+                                  onFocus={() => setAssertionInputs(prev => 
+                                    prev.map(i => i.id === input.id ? { ...i, isOpen: true } : i)
+                                  )}
+                                  onKeyDown={(e) => handleKeyDown(e, input.id)}
+                                  placeholder="Type to search assertions..."
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
+                                />
+                                {input.isOpen && (
+                                  <div
+                                    ref={el => dropdownRefs.current[input.id] = el}
+                                    className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm"
+                                  >
+                                    {predefinedAssertions
+                                      .filter(a => 
+                                        a.label.toLowerCase().includes(input.search.toLowerCase()) ||
+                                        a.description.toLowerCase().includes(input.search.toLowerCase())
+                                      )
+                                      .map((assertion, index) => (
+                                        <div
+                                          key={assertion.id}
+                                          className={`cursor-pointer select-none relative py-2 px-3 ${
+                                            index === (highlightedIndices[input.id] ?? -1) ? 'bg-[#584774] text-white' : 'hover:bg-gray-100'
+                                          }`}
+                                          onClick={() => handleAssertionSelect(input.id, assertion)}
+                                          onMouseEnter={() => setHighlightedIndices(prev => ({ ...prev, [input.id]: index }))}
+                                        >
+                                          <div className="flex flex-col">
+                                            <span className={`font-mono text-sm ${index === (highlightedIndices[input.id] ?? -1) ? 'text-white' : ''}`}>
+                                              {assertion.label}
+                                            </span>
+                                            <span className={`text-xs ${index === (highlightedIndices[input.id] ?? -1) ? 'text-gray-200' : 'text-gray-500'}`}>
+                                              {assertion.description}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                  </div>
+                                )}
+                              </>
                             )}
-                          </>
-                        )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addNewAssertionInput}
+                      className="mt-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+                    >
+                      Add Assertion
+                    </button>
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addNewAssertionInput}
-                  className="mt-2 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                >
-                  Add Assertion
-                </button>
-              </div>
-            </div>
+                </div>
+              </>
+            )}
 
             <div className="mt-6 flex justify-end space-x-3">
               <button
@@ -347,7 +332,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({ isOpen, onClose, onSu
               </button>
               <button
                 type="submit"
-                disabled={!testName.trim() || selectedEnvironments.length === 0}
+                disabled={!testName.trim()}
                 className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-[#584774] hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Flow
