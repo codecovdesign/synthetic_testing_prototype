@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/24/solid';
 import MouseCursor from '../MouseCursor';
 import Breadcrumb from '../Layout/Breadcrumb';
 import CreateTestModal from '../SyntheticTests/CreateTestModal';
 import { Menu } from '@headlessui/react';
+import * as Tooltip from '@radix-ui/react-tooltip';
 
 interface TabProps {
   label: string;
@@ -154,22 +155,18 @@ const SuggestedFlowReview = () => {
   const [progress, setProgress] = useState(0);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);
-  const [showCreateFlowModal, setShowCreateFlowModal] = useState(false);
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>();
   const previewRef = useRef<HTMLDivElement>(null);
   const [selectedStartTime, setSelectedStartTime] = useState<number | null>(null);
   const [selectedEndTime, setSelectedEndTime] = useState<number | null>(null);
+  const [flowName, setFlowName] = useState('');
 
   const flowTitle = location.state?.flowTitle || 'Unknown Flow';
 
   useEffect(() => {
     document.title = `Review suggested flow: ${flowTitle}`;
   }, [flowTitle]);
-
-  useEffect(() => {
-    console.log('showCreateFlowModal state changed:', showCreateFlowModal);
-  }, [showCreateFlowModal]);
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -195,15 +192,6 @@ const SuggestedFlowReview = () => {
   };
 
   const handleCreateFlow = () => {
-    console.log('Create Flow button clicked');
-    console.log('Current showCreateFlowModal state:', showCreateFlowModal);
-    setShowCreateFlowModal(true);
-    console.log('After setShowCreateFlowModal(true)');
-  };
-
-  const handleFlowCreated = () => {
-    console.log('Flow created, closing modal'); // Debug log
-    setShowCreateFlowModal(false);
     navigate('/prevent', { 
       state: { 
         activeTab: 'flows',
@@ -430,7 +418,7 @@ const SuggestedFlowReview = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-50 overflow-hidden">
+    <div className="h-full bg-white overflow-hidden">
       <div className="h-full flex flex-col">
         <div className="sticky top-0 bg-white z-10 border-b border-gray-200">
           <div className="px-6 py-4 flex items-center justify-between">
@@ -448,12 +436,7 @@ const SuggestedFlowReview = () => {
               </button>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Create Flow button clicked (inline)');
-                  handleCreateFlow();
-                }}
+                onClick={handleCreateFlow}
                 disabled={selectedStartTime === null || selectedEndTime === null}
                 className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] ${
                   selectedStartTime === null || selectedEndTime === null
@@ -536,6 +519,24 @@ const SuggestedFlowReview = () => {
                 </p>
               </div>
             </div>
+            {/* Add Flow Name input section */}
+            <div className="p-6 border-b border-gray-200 bg-white">
+              <div className="space-y-2">
+                <label htmlFor="flowName" className="block text-base font-medium text-gray-900">
+                  <b>Step 1:</b> Add Flow Name
+                </label>
+                <div className="relative rounded-md shadow-sm">
+                  <input
+                    type="text"
+                    id="flowName"
+                    value={flowName}
+                    onChange={(e) => setFlowName(e.target.value)}
+                    placeholder="Enter flow name"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774] sm:text-sm"
+                  />
+                </div>
+              </div>
+            </div>
             <div className="border-b border-gray-200">
               <nav className="flex space-x-4 px-6">
                 {tabs.map((tab) => (
@@ -548,25 +549,38 @@ const SuggestedFlowReview = () => {
                 ))}
               </nav>
             </div>
+            {/* Add Step 2 section */}
+            <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center space-x-2">
+                <span className="text-base font-medium text-gray-900">
+                  <b>Step 2:</b> Assign start and end state
+                </span>
+                <Tooltip.Provider>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <div className="cursor-help">
+                        <InformationCircleIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="TooltipContent bg-gray-800 text-white px-3 py-2 text-sm rounded shadow-lg max-w-xs"
+                        sideOffset={5}
+                      >
+                        Sentry monitors the stream of events for that session to look for outcomes and whether the flow succeeds or fails.
+                        <Tooltip.Arrow className="fill-gray-800" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </Tooltip.Provider>
+              </div>
+            </div>
             <div className="flex-1 overflow-auto">
               {renderTabContent()}
             </div>
           </div>
         </div>
       </div>
-
-      <CreateTestModal
-        isOpen={showCreateFlowModal}
-        onClose={() => {
-          console.log('Modal onClose called');
-          setShowCreateFlowModal(false);
-        }}
-        onSubmit={(testName, environments, assertions) => {
-          console.log('Modal onSubmit called with:', { testName, environments, assertions });
-          handleFlowCreated();
-        }}
-        hideAssertions={true}
-      />
     </div>
   );
 };

@@ -371,109 +371,78 @@ const AssertionDetail = () => {
         return (
           <div className="p-4">
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Flow Name</h3>
-                  <p className="mt-1 text-sm text-gray-900">{assertion?.flowName}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                  <p className="mt-1 text-sm text-gray-900">{getStatusDisplay(assertion?.status || 'untested')}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Created By</h3>
-                  <div className="mt-1 flex items-center">
-                    {assertion?.createdBy?.type === 'user' ? (
+              {/* Combined Metadata Section */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Flow Name</h4>
+                    <p className="mt-1 text-sm text-gray-900">{assertion?.flowName}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Status</h4>
+                    <p className="mt-1 text-sm text-gray-900">{getStatusDisplay(assertion?.status || 'untested')}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Created By</h4>
+                    <div className="mt-1 flex items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-[#584774] flex items-center justify-center text-white font-medium text-sm mr-2">
-                          {assertion.createdBy.name?.split(' ').map((part: string) => part[0]).join('').toUpperCase()}
+                          AD
                         </div>
-                        <span className="text-sm text-gray-900">{assertion.createdBy.name}</span>
+                        <span className="text-sm text-gray-900">Ada Lovelace</span>
                       </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-medium text-sm mr-2">
-                          ✨
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Source</h4>
+                    <p className="mt-1 text-sm text-gray-900">
+                      <a href="/session-replay/123" className="text-blue-600 hover:text-blue-800 hover:underline">
+                        View replay
+                      </a>
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Last Seen</h4>
+                    <p className="mt-1 text-sm text-gray-900">{assertion?.lastSeen || '—'}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Last Checked</h4>
+                    <p className="mt-1 text-sm text-gray-900">{assertion?.lastChecked || '—'}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">Failures</h4>
+                    <p className="mt-1 text-sm text-gray-900">{assertion?.failures || '—'}</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-sm font-medium text-gray-500">Flow Details</h4>
+                    <button 
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      Edit Flow
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">Page Load</span>
+                          <span className="text-sm text-gray-500">00:00</span>
                         </div>
-                        <span className="text-sm text-gray-900">AI-generated</span>
+                        <span className="text-sm text-gray-600 mt-0.5">/login</span>
                       </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Last Seen</h3>
-                  <p className="mt-1 text-sm text-gray-900">{assertion?.lastSeen || '—'}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Last Checked</h3>
-                  <p className="mt-1 text-sm text-gray-900">{assertion?.lastChecked || '—'}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Failures</h3>
-                  <p className="mt-1 text-sm text-gray-900">{assertion?.failures || '—'}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Linked Issues</h3>
-                  <p className="mt-1 text-sm text-gray-900">
-                    <a href="/assertion-issues" className="text-blue-600 hover:text-blue-800 hover:underline">
-                      3 related issues
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              {/* Assertion Details Section */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Flow Details</h3>
-                  <button 
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                  >
-                    Edit Flow
-                  </button>
-                </div>
-
-                {/* Flow Range Breadcrumbs */}
-                <div className="mb-6">
-                  <div className="flex items-center space-x-2 mb-2">
+                    </div>
                     <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      <span className="ml-2 text-sm text-gray-600">Page Load</span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">/login</span>
-                    <span className="text-sm text-gray-500">00:00</span>
-                    <div className="flex items-center text-green-600">
-                      <CheckCircleIcon className="h-4 w-4 mr-1" />
-                      <span className="text-xs">Flow Start</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      <span className="ml-2 text-sm text-gray-600">Navigation</span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">/dashboard</span>
-                    <span className="text-sm text-gray-500">00:15</span>
-                    <div className="flex items-center text-green-600">
-                      <CheckCircleIcon className="h-4 w-4 mr-1" />
-                      <span className="text-xs">Flow End</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Assertions Section */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Assertions at end of flow:</label>
-                  <div className="space-y-2">
-                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
-                      expect(page).toHaveURL('/dashboard')
-                    </div>
-                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
-                      expect(locator('#welcome-message')).toContainText('Welcome back')
-                    </div>
-                    <div className="bg-gray-800 text-gray-100 p-3 rounded-md font-mono text-sm">
-                      expect(locator('#user-profile')).toBeVisible()
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">Navigation</span>
+                          <span className="text-sm text-gray-500">00:17</span>
+                        </div>
+                        <span className="text-sm text-gray-600 mt-0.5">/dashboard</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -482,133 +451,67 @@ const AssertionDetail = () => {
               {/* Failure Details Section */}
               {assertion?.status === 'failed' && (
                 <div className="bg-gray-50 rounded-lg p-4 mt-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-4">Why this flow failed</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-4 flex items-center">
+                    <span className="mr-2">❌</span> Why This Flow Failed
+                  </h3>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div>
-                      <div className="text-sm font-medium text-gray-700">Failure Type:</div>
-                      <div className="text-sm text-gray-600 mt-1">Backend service error (503 Service Unavailable)</div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium text-gray-700">Expected Outcome(s):</div>
-                      <div className="text-sm text-gray-600 mt-1">Search results page or "No results" message</div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium text-gray-700">Actual Outcome:</div>
-                      <div className="text-sm text-gray-600 mt-1">Error message: "Search service unavailable"</div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium text-gray-700">Deviation Analysis (last 10 replays):</div>
-                      <div className="mt-3 space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#351')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #351
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#352')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #352
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#353')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #353
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#354')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #354
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#355')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #355
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#356')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #356
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#357')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #357
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#358')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #358
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#359')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #359
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            onClick={() => handleReplayClick('#360')}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                          >
-                            #360
-                          </span>
-                          <span className="text-sm text-gray-600">search service returned 503</span>
-                          <span className="text-sm text-red-500">❌</span>
-                        </div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Failure Summary (AI-Generated)
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Most replays end in a backend 503 error, preventing the dashboard from loading properly.
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-sm font-medium text-gray-700">Replays Affected:</div>
-                      <div className="text-sm text-gray-600 mt-1">10 failed, 0 passed</div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Actual Outcome
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Error message: "Search service unavailable"
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-3">
+                        Deviation Analysis – Last 10 Replays
+                      </div>
+                      <div className="border border-gray-200 rounded-md overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500">Replay ID</th>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500">Result</th>
+                              <th scope="col" className="px-4 py-2 text-left text-xs font-medium text-gray-500">Message</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {[351, 352, 353, 354, 355, 356, 357, 358, 359, 360].map((id) => (
+                              <tr key={id} className="hover:bg-gray-50">
+                                <td className="px-4 py-2 whitespace-nowrap text-sm">
+                                  <span 
+                                    onClick={() => handleReplayClick(`#${id}`)}
+                                    className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                  >
+                                    #{id}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-red-500">❌</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600">search service returned 503</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Replays Affected
+                      </div>
+                      <div className="text-sm text-gray-600">10 failed, 0 passed</div>
                     </div>
                   </div>
                 </div>

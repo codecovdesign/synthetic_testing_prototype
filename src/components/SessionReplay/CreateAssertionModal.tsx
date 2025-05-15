@@ -316,16 +316,16 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between">
               <Dialog.Title className="text-lg font-medium text-gray-900">
-                Create New Flow
+            Create New Flow
               </Dialog.Title>
-              <button
+          <button
                 type="button"
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-500"
-              >
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500"
+          >
                 <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
+          </button>
+        </div>
 
             {/* Flow Range Display */}
             {flowRange && (
@@ -339,21 +339,21 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({
             )}
 
             {/* Flow Name Input */}
-            <div>
+              <div>
               <label htmlFor="flowName" className="block text-sm font-medium text-gray-700 mb-2">
-                Flow Name
-              </label>
-              <input
-                type="text"
-                id="flowName"
-                value={flowName}
-                onChange={(e) => setFlowName(e.target.value)}
+                  Flow Name
+                </label>
+                <input
+                  type="text"
+                  id="flowName"
+                  value={flowName}
+                  onChange={(e) => setFlowName(e.target.value)}
                 onBlur={handleFlowNameBlur}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774]"
-                placeholder="Enter flow name"
+                  placeholder="Enter flow name"
                 required
-              />
-            </div>
+                />
+              </div>
 
             {/* Assertions Section */}
             <div>
@@ -371,30 +371,30 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({
                         className="flex-1 font-mono px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#584774]"
                         placeholder="Enter assertion..."
                       />
-                      <button
-                        type="button"
+                            <button
+                              type="button"
                         onClick={() => handleRemoveAssertion(input.id)}
                         className="text-gray-400 hover:text-gray-600"
-                      >
-                        <XMarkIcon className="h-5 w-5" />
-                      </button>
-                    </div>
+                            >
+                              <XMarkIcon className="h-5 w-5" />
+                            </button>
+                          </div>
                     {index < assertionInputs.length - 1 && (
                       <div className="mt-2 text-sm font-medium text-gray-500 text-center">AND</div>
                     )}
-                  </div>
-                ))}
-
+                        </div>
+                      ))}
+                      
                 {/* Add Assertion Button */}
                 <div className="relative" ref={dropdownRef}>
-                  <button
-                    type="button"
+                                <button
+                                  type="button"
                     onClick={() => setShowDropdown(!showDropdown)}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#584774] hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
                   >
                     <PlusIcon className="h-5 w-5 mr-2" />
                     Add Assertion
-                  </button>
+                          </button>
 
                   {/* Assertion Dropdown */}
                   {showDropdown && (
@@ -437,23 +437,23 @@ const CreateAssertionModal: React.FC<CreateAssertionModalProps> = ({
 
             {/* Form Actions */}
             <div className="sticky bottom-0 bg-white pt-4 border-t border-gray-200">
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                >
-                  Create Flow
-                </button>
-              </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-white bg-[#584774] rounded-md hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+              >
+                Create Flow
+              </button>
             </div>
-          </form>
+          </div>
+        </form>
         </Dialog.Panel>
       </div>
     </Dialog>

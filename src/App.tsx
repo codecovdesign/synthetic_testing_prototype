@@ -42,8 +42,16 @@ const App = () => {
               <Prevent />
             </Layout>
           } />
-          <Route path="/prevent/suggested-flow/:id" element={<SuggestedFlowReview />} />
-          <Route path="/prevent/create-from-replay" element={<FlowCreationReplay />} />
+          <Route path="/prevent/suggested-flow/:id" element={
+            <Layout>
+              <SuggestedFlowReview />
+            </Layout>
+          } />
+          <Route path="/prevent/create-from-replay" element={
+            <Layout>
+              <FlowCreationReplay />
+            </Layout>
+          } />
           <Route path="/prevent/create-from-environment" element={<FlowCreationEnvironment />} />
           <Route path="/browser-tests" element={
             <Layout>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
+import { PlayIcon, PauseIcon, ForwardIcon, BackwardIcon, XMarkIcon, ChevronDownIcon, MagnifyingGlassIcon, InformationCircleIcon, DocumentTextIcon, FolderIcon, ChartBarIcon, LightBulbIcon, ShieldCheckIcon } from '@heroicons/react/24/solid';
+import { Link } from 'react-router-dom';
 import Breadcrumb from '../Layout/Breadcrumb';
 import { Menu } from '@headlessui/react';
 import CreateAssertionModal, { Assertion } from '../SessionReplay/CreateAssertionModal';
 import FlowBreadcrumbs from '../SessionReplay/FlowBreadcrumbs';
+import { SentryLogo } from '../Icons';
 
 interface TabProps {
   label: string;
@@ -370,6 +372,110 @@ interface FlowCreationReplayProps {
   }>;
 }
 
+const ReplayFlowBreadcrumbs: React.FC<{
+  steps: Array<{
+    id: string;
+    type: string;
+    name: string;
+    timestamp: string;
+  }>;
+  onSelectStart: (id: string) => void;
+  onSelectEnd: (id: string) => void;
+  selectedStartId: string | null;
+  selectedEndId: string | null;
+  onPlayFromTime?: (startTime: string, endTime: string) => void;
+}> = ({
+  steps,
+  onSelectStart,
+  onSelectEnd,
+  selectedStartId,
+  selectedEndId,
+  onPlayFromTime
+}) => {
+  const isInSelectedRange = (stepId: string) => {
+    if (!selectedStartId || !selectedEndId) return false;
+    const startIndex = steps.findIndex(step => step.id === selectedStartId);
+    const endIndex = steps.findIndex(step => step.id === selectedEndId);
+    const currentIndex = steps.findIndex(step => step.id === stepId);
+    return currentIndex >= Math.min(startIndex, endIndex) && 
+           currentIndex <= Math.max(startIndex, endIndex);
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-b-lg border border-gray-200">
+      <div className="space-y-4">
+        {steps.map((step) => {
+          const isInRange = isInSelectedRange(step.id);
+          const isStart = step.id === selectedStartId;
+          const isEnd = step.id === selectedEndId;
+
+          return (
+            <div 
+              key={step.id} 
+              className={`p-3 rounded border ${
+                isInRange 
+                  ? 'bg-[#584774]/5 border-[#584774]' 
+                  : 'border-gray-100 bg-gray-50'
+              } ${
+                isStart ? 'border-t-2 border-t-[#584774]' : ''
+              } ${
+                isEnd ? 'border-b-2 border-b-[#584774]' : ''
+              } ${
+                isInRange && !isStart && !isEnd ? 'border-l-2 border-r-2 border-l-[#584774] border-r-[#584774]' : ''
+              } transition-colors duration-200`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center space-x-2">
+                  <span className={`text-xs ${isInRange ? 'text-[#584774] font-medium' : 'text-gray-500'}`}>
+                    {step.timestamp}
+                  </span>
+                  <span className={`text-xs font-semibold ${isInRange ? 'text-[#584774]' : 'text-gray-700'}`}>
+                    {step.type}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => onSelectStart(step.id)}
+                    className={`px-2 py-1 text-xs font-medium rounded ${
+                      isStart
+                        ? 'bg-[#584774] text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    Start
+                  </button>
+                  <button
+                    onClick={() => onSelectEnd(step.id)}
+                    className={`px-2 py-1 text-xs font-medium rounded ${
+                      isEnd
+                        ? 'bg-[#584774] text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    disabled={selectedStartId !== null && steps.findIndex(s => s.id === step.id) <= steps.findIndex(s => s.id === selectedStartId)}
+                  >
+                    End
+                  </button>
+                  {isStart && isEnd && onPlayFromTime && (
+                    <button
+                      onClick={() => onPlayFromTime(step.timestamp, steps[steps.findIndex(s => s.id === selectedEndId)].timestamp)}
+                      className="px-2 py-1 text-xs font-medium rounded bg-[#584774] text-white hover:bg-[#4a3c62]"
+                    >
+                      Play
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className={`text-sm ${isInRange ? 'text-[#584774]' : 'text-gray-900'}`}>
+                {step.name}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems = [
   { label: 'Prevent', to: '/prevent' },
   { label: 'Flows', to: '/prevent', state: { activeTab: 'flows' } },
@@ -387,11 +493,11 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);
   const [replayFilter, setReplayFilter] = useState<'all' | 'suggested'>('all');
+  const [flowName, setFlowName] = useState('');
   const animationRef = useRef<number>();
   const startTimeRef = useRef<number>();
   const previewRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [flowStartIndex, setFlowStartIndex] = useState<number | null>(null);
   const [flowEndIndex, setFlowEndIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -694,8 +800,8 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
     switch (activeTab.toLowerCase()) {
       case 'breadcrumbs':
         return (
-          <div className="p-4">
-            <FlowBreadcrumbs
+          <div className="flex-1 overflow-auto">
+            <ReplayFlowBreadcrumbs
               steps={mockSteps}
               onSelectStart={(id) => {
                 const index = mockSteps.findIndex(step => step.id === id);
@@ -715,10 +821,9 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
               }}
               selectedStartId={flowStartIndex !== null ? mockSteps[flowStartIndex]?.id : null}
               selectedEndId={flowEndIndex !== null ? mockSteps[flowEndIndex]?.id : null}
-              onFlowRangeSelected={() => {
-                if (flowStartIndex !== null && flowEndIndex !== null) {
-                  setIsModalOpen(true);
-                }
+              onPlayFromTime={(startTime, endTime) => {
+                // TODO: Implement play from time functionality
+                console.log('Play from', startTime, 'to', endTime);
               }}
             />
           </div>
@@ -732,214 +837,243 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
     }
   };
 
-  const handleCreateFlow = (flowName: string, prompt: string, assertions: Assertion[], genericAssertions: string[]) => {
-    console.log('Creating flow with data:', { flowName, prompt, assertions, genericAssertions });
-    // Close the modal and navigate back to Prevent Flows page
-    setIsModalOpen(false);
+  const handleCreateFlow = () => {
+    // Navigate directly back to prevent page without showing modal
     navigate('/prevent', { state: { activeTab: 'flows' } });
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="sticky top-0 bg-white z-40">
-        <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-          <Breadcrumb items={breadcrumbItems} />
-          <button
-            onClick={() => navigate('/prevent', { state: { activeTab: 'flows' } })}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </header>
-      </div>
+    <div className="h-full bg-white overflow-hidden">
+      <div className="h-full flex flex-col">
+        <div className="sticky top-0 bg-white z-40">
+          <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
+            <Breadcrumb items={breadcrumbItems} />
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/prevent', { state: { activeTab: 'flows' } })}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleCreateFlow}
+                disabled={flowStartIndex === null || flowEndIndex === null || !flowName.trim()}
+                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] ${
+                  flowStartIndex === null || flowEndIndex === null || !flowName.trim()
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#584774] text-white hover:bg-[#473661]'
+                }`}
+              >
+                Create Flow
+              </button>
+            </div>
+          </header>
+        </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="flex h-full">
-          <div className="flex-1 flex flex-col">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center space-x-4">
-                <div className="relative flex-1">
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <span>{selectedReplay.name}</span>
-                    <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-                  </button>
-                  {isDropdownOpen && (
-                    <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200">
-                      <div className="p-2 border-b border-gray-200">
-                        <div className="flex items-center space-x-4 mb-2">
-                          <button
-                            onClick={() => setReplayFilter('all')}
-                            className={`px-3 py-1 text-sm rounded-md ${
-                              replayFilter === 'all' 
-                                ? 'bg-blue-100 text-blue-700' 
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                          >
-                            All Replays
-                          </button>
-                          <button
-                            onClick={() => setReplayFilter('suggested')}
-                            className={`px-3 py-1 text-sm rounded-md ${
-                              replayFilter === 'suggested' 
-                                ? 'bg-blue-100 text-blue-700' 
-                                : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                          >
-                            Suggested Replays
-                          </button>
+        <div className="flex-1 overflow-hidden">
+          <div className="flex h-full">
+            <div className="flex-1 flex flex-col">
+              <div className="p-4 border-b border-gray-200">
+                <div className="flex items-center space-x-4">
+                  <div className="relative flex-1">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="w-full flex items-center justify-between px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <span>{selectedReplay.name}</span>
+                      <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200">
+                        <div className="p-2 border-b border-gray-200">
+                          <div className="flex items-center space-x-4 mb-2">
+                            <button
+                              onClick={() => setReplayFilter('all')}
+                              className={`px-3 py-1 text-sm rounded-md ${
+                                replayFilter === 'all' 
+                                  ? 'bg-blue-100 text-blue-700' 
+                                  : 'text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              All Replays
+                            </button>
+                            <button
+                              onClick={() => setReplayFilter('suggested')}
+                              className={`px-3 py-1 text-sm rounded-md ${
+                                replayFilter === 'suggested' 
+                                  ? 'bg-blue-100 text-blue-700' 
+                                  : 'text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              Suggested Replays
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                              type="text"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              placeholder="Search replays..."
+                              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
                         </div>
-                        <div className="relative">
-                          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search replays..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        <div className="max-h-60 overflow-y-auto">
+                          {filteredReplays.map((replay) => (
+                            <button
+                              key={replay.id}
+                              onClick={() => handleReplaySelect(replay)}
+                              className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
+                            >
+                              <div className="font-medium">{replay.name}</div>
+                              {replay.description && (
+                                <div className="text-sm text-gray-500">{replay.description}</div>
+                              )}
+                              <div className="text-sm text-gray-500">
+                                {replay.user} • {replay.location} • {replay.timestamp}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 bg-gray-50 p-4 overflow-auto">
+                <div className="bg-white rounded-lg shadow-sm p-4 h-full">
+                  <div className="p-4 border-b border-gray-200">
+                    <label htmlFor="flowName" className="block text-sm font-medium text-gray-700 mb-1">
+                      Flow Name
+                    </label>
+                    <input
+                      type="text"
+                      id="flowName"
+                      value={flowName}
+                      onChange={(e) => setFlowName(e.target.value)}
+                      placeholder="Enter flow name"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
+                    />
+                  </div>
+                  <div className="aspect-video bg-gray-100 rounded-lg relative overflow-hidden" ref={previewRef}>
+                    {isLoading ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+                      </div>
+                    ) : (
+                      <>
+                        {selectedReplay.id === 's2' ? (
+                          <CheckoutForm className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                        ) : (
+                          <LoginForm className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                        )}
+                        {showCursor && (
+                          <div
+                            className="absolute w-4 h-4 bg-blue-500 rounded-full pointer-events-none"
+                            style={{
+                              left: cursorPosition.x,
+                              top: cursorPosition.y,
+                              transform: 'translate(-50%, -50%)'
+                            }}
                           />
-                        </div>
-                      </div>
-                      <div className="max-h-60 overflow-y-auto">
-                        {filteredReplays.map((replay) => (
-                          <button
-                            key={replay.id}
-                            onClick={() => handleReplaySelect(replay)}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:outline-none focus:bg-gray-100"
-                          >
-                            <div className="font-medium">{replay.name}</div>
-                            {replay.description && (
-                              <div className="text-sm text-gray-500">{replay.description}</div>
-                            )}
-                            <div className="text-sm text-gray-500">
-                              {replay.user} • {replay.location} • {replay.timestamp}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {/* <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-4 py-2 bg-[#584774] text-white rounded-md shadow-sm hover:bg-[#4a3c62] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774]"
-                >
-                  Create Flow
-                </button> */}
-              </div>
-            </div>
-
-            <div className="flex-1 bg-gray-50 p-4 overflow-auto">
-              <div className="bg-white rounded-lg shadow-sm p-4 h-full">
-                <div className="aspect-video bg-gray-100 rounded-lg relative overflow-hidden" ref={previewRef}>
-                  {isLoading ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
-                    </div>
-                  ) : (
-                    <>
-                      {selectedReplay.id === 's2' ? (
-                        <CheckoutForm className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                      ) : (
-                        <LoginForm className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                      )}
-                      {showCursor && (
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={handlePlayPause}
+                        className="p-2 text-gray-600 hover:text-gray-900"
+                      >
+                        {isPlaying ? <PauseIcon className="h-6 w-6" /> : <PlayIcon className="h-6 w-6" />}
+                      </button>
+                      <div className="w-64 h-2 bg-gray-200 rounded-full">
                         <div
-                          className="absolute w-4 h-4 bg-blue-500 rounded-full pointer-events-none"
-                          style={{
-                            left: cursorPosition.x,
-                            top: cursorPosition.y,
-                            transform: 'translate(-50%, -50%)'
-                          }}
+                          className="h-full bg-blue-500 rounded-full"
+                          style={{ width: `${progress}%` }}
                         />
-                      )}
-                    </>
-                  )}
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <button
-                      onClick={handlePlayPause}
-                      className="p-2 text-gray-600 hover:text-gray-900"
-                    >
-                      {isPlaying ? <PauseIcon className="h-6 w-6" /> : <PlayIcon className="h-6 w-6" />}
-                    </button>
-                    <div className="w-64 h-2 bg-gray-200 rounded-full">
-                      <div
-                        className="h-full bg-blue-500 rounded-full"
-                        style={{ width: `${progress}%` }}
-                      />
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        {Math.floor(progress / 100 * 10)}s
+                      </span>
                     </div>
-                    <span className="text-sm text-gray-600">
-                      {Math.floor(progress / 100 * 10)}s
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleSpeedChange(0.5)}
-                      className={`px-2 py-1 text-sm rounded ${
-                        playbackSpeed === 0.5 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      0.5x
-                    </button>
-                    <button
-                      onClick={() => handleSpeedChange(1)}
-                      className={`px-2 py-1 text-sm rounded ${
-                        playbackSpeed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      1x
-                    </button>
-                    <button
-                      onClick={() => handleSpeedChange(2)}
-                      className={`px-2 py-1 text-sm rounded ${
-                        playbackSpeed === 2 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      2x
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleSpeedChange(0.5)}
+                        className={`px-2 py-1 text-sm rounded ${
+                          playbackSpeed === 0.5 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        0.5x
+                      </button>
+                      <button
+                        onClick={() => handleSpeedChange(1)}
+                        className={`px-2 py-1 text-sm rounded ${
+                          playbackSpeed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        1x
+                      </button>
+                      <button
+                        onClick={() => handleSpeedChange(2)}
+                        className={`px-2 py-1 text-sm rounded ${
+                          playbackSpeed === 2 ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        2x
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="w-[40rem] bg-white border-l border-gray-200 flex flex-col">
-            <div className="flex border-b border-gray-200">
-              {tabs.map((tab) => (
-                <Tab
-                  key={tab}
-                  label={tab}
-                  isActive={activeTab.toLowerCase() === tab.toLowerCase()}
-                  onClick={() => setActiveTab(tab.toLowerCase())}
-                />
-              ))}
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {renderTabContent()}
+            <div className="w-[40rem] bg-white border-l border-gray-200 flex flex-col">
+              <div className="p-6 border-b border-gray-200 bg-white">
+                <div className="space-y-2">
+                  <label htmlFor="flowName" className="block text-base font-medium text-gray-900">
+                    <b>Step 1:</b> Add Flow Name
+                  </label>
+                  <div className="relative rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      id="flowName"
+                      value={flowName}
+                      onChange={(e) => setFlowName(e.target.value)}
+                      placeholder="Enter flow name"
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774] sm:text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex border-b border-gray-200">
+                {tabs.map((tab) => (
+                  <Tab
+                    key={tab}
+                    label={tab}
+                    isActive={activeTab.toLowerCase() === tab.toLowerCase()}
+                    onClick={() => setActiveTab(tab.toLowerCase())}
+                  />
+                ))}
+              </div>
+              <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+                <div className="flex items-center space-x-2">
+                  <span className="text-base font-medium text-gray-900">
+                    <b>Step 2:</b> Assign start and end state
+                  </span>
+                  <InformationCircleIcon className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {renderTabContent()}
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <CreateAssertionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateFlow}
-        initialData={{
-          flowName: '',
-          prompt: '',
-          assertions: [],
-          genericAssertions: []
-        }}
-        flowRange={flowStartIndex !== null && flowEndIndex !== null ? {
-          start: mockSteps[flowStartIndex],
-          end: mockSteps[flowEndIndex]
-        } : undefined}
-      />
     </div>
   );
 };

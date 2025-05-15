@@ -63,26 +63,17 @@ const AssertionsPanel = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="pl-8 pr-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full">
                 Flow Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 Created By
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-2 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 Status
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                 Last Seen
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Last Checked
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Failures
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Linked Issues
               </th>
             </tr>
           </thead>
@@ -93,14 +84,14 @@ const AssertionsPanel = () => {
                 className="hover:bg-gray-50 cursor-pointer"
                 onClick={() => handleRowClick(assertion)}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.flowName}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="pl-8 pr-4 py-4 whitespace-nowrap text-sm text-gray-900 w-full">{assertion.flowName}</td>
+                <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                   {assertion.createdBy?.type === 'user' ? (
                     <Tooltip.Provider delayDuration={0}>
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <div 
-                            className="flex items-center"
+                            className="flex items-center justify-end"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div 
@@ -126,13 +117,13 @@ const AssertionsPanel = () => {
                       <Tooltip.Root>
                         <Tooltip.Trigger asChild>
                           <div 
-                            className="flex items-center"
+                            className="flex items-center justify-end"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div 
-                              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-medium text-sm"
+                              className="w-8 h-8 rounded-full bg-[#584774] flex items-center justify-center text-white font-medium text-sm"
                             >
-                              ✨
+                              AI
                             </div>
                           </div>
                         </Tooltip.Trigger>
@@ -149,29 +140,20 @@ const AssertionsPanel = () => {
                     </Tooltip.Provider>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getStatusDisplay(assertion.status)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{getStatusDisplay(assertion.status)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                   {assertion.lastSeen === '—' ? (
                     '—'
                   ) : (
-                    <>
-                      <a 
-                        href="#" 
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Handle commit link click
-                        }}
-                      >
-                        {assertion.lastSeen.split(' – ')[0]}
-                      </a>
-                      {' – ' + assertion.lastSeen.split(' – ')[1]}
-                    </>
+                    <a 
+                      href={`/session-replay/${assertion.id}`}
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {assertion.lastSeen.split(' – ')[0]}
+                    </a>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.lastChecked}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.failures || '—'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{assertion.linkedIssues || '—'}</td>
               </tr>
             ))}
           </tbody>
