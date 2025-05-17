@@ -461,16 +461,7 @@ const AssertionDetail = () => {
                         Failure Summary (AI-Generated)
                       </div>
                       <div className="text-sm text-gray-600">
-                        Most replays end in a backend 503 error, preventing the dashboard from loading properly.
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm font-medium text-gray-700 mb-2">
-                        Actual Outcome
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Error message: "Search service unavailable"
+                        Most replays had a backend 503 error, preventing the dashboard from loading properly.
                       </div>
                     </div>
 
@@ -488,18 +479,33 @@ const AssertionDetail = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {[351, 352, 353, 354, 355, 356, 357, 358, 359, 360].map((id) => (
-                              <tr key={id} className="hover:bg-gray-50">
+                            {[
+                              { id: 351, status: 'failed', message: 'search service returned 503' },
+                              { id: 352, status: 'failed', message: 'search service returned 503' },
+                              { id: 353, status: 'failed', message: 'search service returned 503' },
+                              { id: 354, status: 'failed', message: 'search service returned 503' },
+                              { id: 355, status: 'failed', message: 'search service returned 503' },
+                              { id: 356, status: 'failed', message: 'search service returned 503' },
+                              { id: 357, status: 'failed', message: 'search service returned 503' },
+                              { id: 358, status: 'success', message: 'no issue detected' },
+                              { id: 359, status: 'failed', message: 'search service returned 503' },
+                              { id: 360, status: 'success', message: 'no issue detected' }
+                            ].map((replay) => (
+                              <tr key={replay.id} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 whitespace-nowrap text-sm">
                                   <span 
-                                    onClick={() => handleReplayClick(`#${id}`)}
+                                    onClick={() => handleReplayClick(`#${replay.id}`)}
                                     className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                   >
-                                    #{id}
+                                    #{replay.id}
                                   </span>
                                 </td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-red-500">❌</td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600">search service returned 503</td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm">
+                                  <span className={replay.status === 'success' ? 'text-green-500' : 'text-red-500'}>
+                                    {replay.status === 'success' ? '✅' : '❌'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600">{replay.message}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -511,7 +517,7 @@ const AssertionDetail = () => {
                       <div className="text-sm font-medium text-gray-700 mb-2">
                         Replays Affected
                       </div>
-                      <div className="text-sm text-gray-600">10 failed, 0 passed</div>
+                      <div className="text-sm text-gray-600">8 failed, 2 passed</div>
                     </div>
                   </div>
                 </div>
