@@ -384,13 +384,17 @@ const ReplayFlowBreadcrumbs: React.FC<{
   selectedStartId: string | null;
   selectedEndId: string | null;
   onPlayFromTime?: (startTime: string, endTime: string) => void;
+  selectedAssertions: Record<string, string>;
+  onSelectAssertion: (stepId: string, assertionType: string) => void;
 }> = ({
   steps,
   onSelectStart,
   onSelectEnd,
   selectedStartId,
   selectedEndId,
-  onPlayFromTime
+  onPlayFromTime,
+  selectedAssertions,
+  onSelectAssertion
 }) => {
   const isInSelectedRange = (stepId: string) => {
     if (!selectedStartId || !selectedEndId) return false;
@@ -434,6 +438,54 @@ const ReplayFlowBreadcrumbs: React.FC<{
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {isInRange && (
+                    <Menu as="div" className="relative inline-block text-left">
+                      <Menu.Button className="px-2 py-1 text-xs font-medium rounded bg-[#584774] text-white hover:bg-[#473661] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#584774] max-w-24 truncate">
+                        {selectedAssertions[step.id] || 'Assert'}
+                        <ChevronDownIcon className="inline-block w-3 h-3 ml-1 flex-shrink-0" />
+                      </Menu.Button>
+                      <Menu.Items className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                        <div className="py-1">
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => onSelectAssertion(step.id, 'Success with 200 status')}
+                                className={`${
+                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                } block w-full text-left px-4 py-2 text-xs`}
+                              >
+                                Success with 200 status
+                              </button>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => onSelectAssertion(step.id, 'Failure with 400 plus')}
+                                className={`${
+                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                } block w-full text-left px-4 py-2 text-xs`}
+                              >
+                                Failure with 400 plus
+                              </button>
+                            )}
+                          </Menu.Item>
+                          <Menu.Item>
+                            {({ active }) => (
+                              <button
+                                onClick={() => onSelectAssertion(step.id, 'Breadcrumb occured')}
+                                className={`${
+                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                } block w-full text-left px-4 py-2 text-xs`}
+                              >
+                                Breadcrumb occured
+                              </button>
+                            )}
+                          </Menu.Item>
+                        </div>
+                      </Menu.Items>
+                    </Menu>
+                  )}
                   <button
                     onClick={() => onSelectStart(step.id)}
                     className={`px-2 py-1 text-xs font-medium rounded ${
@@ -501,6 +553,7 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
   const [flowStartIndex, setFlowStartIndex] = useState<number | null>(null);
   const [flowEndIndex, setFlowEndIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedAssertions, setSelectedAssertions] = useState<Record<string, string>>({});
 
   const filteredReplays = replayFilter === 'suggested' 
     ? suggestedReplays.filter(replay => 
@@ -825,6 +878,10 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
                 // TODO: Implement play from time functionality
                 console.log('Play from', startTime, 'to', endTime);
               }}
+              selectedAssertions={selectedAssertions}
+              onSelectAssertion={(stepId, assertionType) => {
+                handleAssertionSelect(stepId, assertionType);
+              }}
             />
           </div>
         );
@@ -840,6 +897,13 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
   const handleCreateFlow = () => {
     // Navigate directly back to prevent page without showing modal
     navigate('/prevent', { state: { activeTab: 'flows' } });
+  };
+
+  const handleAssertionSelect = (stepId: string, assertionType: string) => {
+    setSelectedAssertions(prev => ({
+      ...prev,
+      [stepId]: assertionType
+    }));
   };
 
   return (
