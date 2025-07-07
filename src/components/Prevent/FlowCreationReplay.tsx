@@ -554,6 +554,7 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
   const [flowEndIndex, setFlowEndIndex] = useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectedAssertions, setSelectedAssertions] = useState<Record<string, string>>({});
+  const [isFlowExplanationExpanded, setIsFlowExplanationExpanded] = useState(false);
 
   const filteredReplays = replayFilter === 'suggested' 
     ? suggestedReplays.filter(replay => 
@@ -859,17 +860,27 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
               onSelectStart={(id) => {
                 const index = mockSteps.findIndex(step => step.id === id);
                 if (index !== -1) {
-                  setFlowStartIndex(index);
-                  // If end is before start, clear it
-                  if (flowEndIndex !== null && flowEndIndex < index) {
-                    setFlowEndIndex(null);
+                  // If clicking on already selected start, unselect it
+                  if (flowStartIndex === index) {
+                    setFlowStartIndex(null);
+                  } else {
+                    setFlowStartIndex(index);
+                    // If end is before start, clear it
+                    if (flowEndIndex !== null && flowEndIndex < index) {
+                      setFlowEndIndex(null);
+                    }
                   }
                 }
               }}
               onSelectEnd={(id) => {
                 const index = mockSteps.findIndex(step => step.id === id);
-                if (index !== -1 && flowStartIndex !== null && index > flowStartIndex) {
-                  setFlowEndIndex(index);
+                if (index !== -1) {
+                  // If clicking on already selected end, unselect it
+                  if (flowEndIndex === index) {
+                    setFlowEndIndex(null);
+                  } else if (flowStartIndex !== null && index > flowStartIndex) {
+                    setFlowEndIndex(index);
+                  }
                 }
               }}
               selectedStartId={flowStartIndex !== null ? mockSteps[flowStartIndex]?.id : null}
@@ -1008,19 +1019,6 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
 
               <div className="flex-1 bg-gray-50 p-4 overflow-auto">
                 <div className="bg-white rounded-lg shadow-sm p-4 h-full">
-                  <div className="p-4 border-b border-gray-200">
-                    <label htmlFor="flowName" className="block text-sm font-medium text-gray-700 mb-1">
-                      Flow Name
-                    </label>
-                    <input
-                      type="text"
-                      id="flowName"
-                      value={flowName}
-                      onChange={(e) => setFlowName(e.target.value)}
-                      placeholder="Enter flow name"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#584774] focus:ring-[#584774] sm:text-sm"
-                    />
-                  </div>
                   <div className="aspect-video bg-gray-100 rounded-lg relative overflow-hidden" ref={previewRef}>
                     {isLoading ? (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -1098,9 +1096,22 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
             <div className="w-[40rem] bg-white border-l border-gray-200 flex flex-col">
               <div className="p-6 border-b border-gray-200 bg-white">
                 <div className="space-y-2">
-                  <label htmlFor="flowName" className="block text-base font-medium text-gray-900">
-                    <b>Step 1:</b> Add Flow Name
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="flowName" className="block text-base font-medium text-gray-900">
+                      <b>Step 1:</b> Add Flow Name
+                    </label>
+                    <button
+                      onClick={() => setIsFlowExplanationExpanded(!isFlowExplanationExpanded)}
+                      className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:ring-offset-1 rounded px-2 py-1"
+                    >
+                      <span>What is a flow?</span>
+                      <ChevronDownIcon 
+                        className={`h-4 w-4 transition-transform duration-200 ${
+                          isFlowExplanationExpanded ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    </button>
+                  </div>
                   <div className="relative rounded-md shadow-sm">
                     <input
                       type="text"
@@ -1111,6 +1122,16 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
                       className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#584774] focus:border-[#584774] sm:text-sm"
                     />
                   </div>
+                  {isFlowExplanationExpanded && (
+                    <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-200 ease-in-out">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        A flow captures a key user journey by selecting a start and end breadcrumb from a session replay. This flow is continuously evaluated against incoming replays to determine whether users are completing the intended path.
+                      </p>
+                      <p className="text-sm text-gray-700 leading-relaxed mt-2">
+                        You can optionally assert that the flow completed successfully, which lets the system treat replays as pass/fail tests for the defined journey. This makes it easy to spot when important actions—like reaching a dashboard or completing checkout—are failing across sessions.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex border-b border-gray-200">
