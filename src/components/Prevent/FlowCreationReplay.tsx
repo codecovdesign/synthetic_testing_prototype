@@ -917,6 +917,19 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
     }));
   };
 
+  const generateFlowPreview = () => {
+    const startStep = flowStartIndex !== null ? mockSteps[flowStartIndex] : null;
+    const endStep = flowEndIndex !== null ? mockSteps[flowEndIndex] : null;
+    const hasAssertions = Object.keys(selectedAssertions).length > 0;
+    
+    const startText = startStep ? startStep.name : 'start';
+    const endText = endStep ? endStep.name : 'end';
+    const timestamp = endStep ? endStep.timestamp : '00:00';
+    const assertionText = hasAssertions ? 'with assertion' : 'without assertion';
+    
+    return `When this happens: \`${startText}\`, I expect: \`${endText}\` (around ${timestamp}), to occur: \`${assertionText}\``;
+  };
+
   return (
     <div className="h-full bg-white overflow-hidden">
       <div className="h-full flex flex-col">
@@ -1130,6 +1143,11 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
                       <p className="text-sm text-gray-700 leading-relaxed mt-2">
                         You can optionally assert that the flow completed successfully, which lets the system treat replays as pass/fail tests for the defined journey. This makes it easy to spot when important actions—like reaching a dashboard or completing checkout—are failing across sessions.
                       </p>
+                      <div className="mt-3 pt-2 border-t border-gray-200">
+                        <a href="#" className="text-sm text-[#584774] hover:text-[#473661] hover:underline font-medium">
+                          Read docs
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1150,6 +1168,19 @@ const FlowCreationReplay: React.FC<FlowCreationReplayProps> = ({ breadcrumbItems
                     <b>Step 2:</b> Assign start and end state
                   </span>
                   <InformationCircleIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {generateFlowPreview().split('`').map((part, index) => 
+                      index % 2 === 1 ? (
+                        <code key={index} className="px-1 py-0.5 bg-gray-200 text-gray-800 rounded text-xs font-mono">
+                          {part}
+                        </code>
+                      ) : (
+                        part
+                      )
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
